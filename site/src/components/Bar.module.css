@@ -1,0 +1,615 @@
+/*
+ * The bar (01-system.md §7.2): 64px (56px under 600px), sticky, on the field
+ * beneath it. No border, shadow, blur or pill. Its background and colour are
+ * the page's only colour transition (240ms).
+ */
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-bar);
+  height: var(--bar);
+  padding-inline: var(--margin);
+  display: flex;
+  align-items: center;
+  gap: var(--space-m);
+  transition:
+    background-color var(--dur-ui) var(--ease-hover),
+    color var(--dur-ui) var(--ease-hover);
+}
+
+.wordmark {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target-min);
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--step-0);
+  letter-spacing: var(--tracking-statement);
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* Bar links: no underline at rest, underline on hover/focus, a permanent one
+   for the current chapter. Press: opacity 0.7 at 140ms (tap feedback, since
+   the tap highlight is off). */
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target-min);
+  font-weight: var(--weight-ui);
+  font-size: var(--step-ui);
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration-color: transparent;
+}
+
+.link:active,
+.wordmark:active {
+  opacity: 0.7;
+}
+
+.link[aria-current] {
+  text-decoration-color: currentColor;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .link:hover {
+    text-decoration-color: currentColor;
+  }
+}
+
+.caseLabel {
+  display: none;
+  font-weight: var(--weight-small-em);
+  font-size: var(--step--1);
+  white-space: nowrap;
+}
+
+.nav {
+  display: none;
+}
+
+.navList {
+  display: flex;
+  gap: 28px;
+}
+
+.right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-m);
+}
+
+/*
+ * The hand-off (§7.2): one Email me per screen, and the right end is never
+ * empty. Home (.ctaOut): the bar's Email me starts hidden and OUT of flow at
+ * the slot's right end, so CV and the language switch sit flush right at
+ * first paint, with or without JS. When it shows (a JS-only state) they slide
+ * left by its width plus the gap (--handoff-x, measured). Case pages start
+ * with it shown and in flow; while a content Email me is in view they slide
+ * right by the same amount. Below 1024px the nav travels with them.
+ *
+ * The two never share a frame. Show: the links slide at once (240ms out)
+ * and the button waits 120ms, then fades and drops in (160ms out); the
+ * links have cleared its box by 116ms at every width. Hide: the button
+ * fades and rises out first (100ms out, under 5% opacity by 46ms) and the
+ * links wait 80ms before they slide back. The hand-off moves the button by
+ * `translate`, so its press (`transform: scale`) keeps its own 140ms.
+ */
+.bar {
+  --links-delay: 0ms;
+  --cta-delay: 120ms;
+  --cta-dur: 160ms;
+  --cta-vis: 120ms;
+}
+
+.bar[data-cta="hidden"] {
+  --links-delay: 80ms;
+  --cta-delay: 0ms;
+  --cta-dur: 100ms;
+  --cta-vis: 100ms;
+}
+
+.shift {
+  transition:
+    transform var(--dur-ui) var(--ease-out) var(--links-delay),
+    text-decoration-color var(--dur-hover) var(--ease-hover),
+    opacity var(--dur-press) var(--ease-out);
+}
+
+/* Listed so that under reduced motion (globals.css keeps only opacity and
+   the colours, matched by index) opacity and background-color keep their
+   own timings; visibility then flips at once. */
+.cta {
+  transition:
+    opacity var(--cta-dur) var(--ease-out) var(--cta-delay),
+    translate var(--cta-dur) var(--ease-out) var(--cta-delay),
+    background-color var(--dur-hover) var(--ease-hover),
+    visibility 0s linear var(--cta-vis),
+    transform var(--dur-press) var(--ease-out);
+}
+
+.bar[data-cta="hidden"] .cta {
+  visibility: hidden;
+  opacity: 0;
+  translate: 0 -6px;
+}
+
+/* Reduced motion: the links land at once, so the button swaps at once on
+   hide (nothing fades over them) and fades in without waiting on show. */
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    --cta-delay: 0ms;
+    --cta-vis: 0ms;
+  }
+
+  .bar[data-cta="hidden"] {
+    --cta-dur: 0ms;
+    --cta-vis: 0ms;
+  }
+}
+
+/* The slot: the language switch, then the bar's Email me, at every width
+   (the switch never gives its place up). Home (.ctaOut): Email me is out of
+   flow at the slot's right end, centred on it, and the switch slides left by
+   its width plus the gap when it shows. Case pages: in flow; the switch
+   covers its place while it hides. */
+.slot {
+  display: flex;
+  align-items: center;
+  gap: var(--space-s);
+}
+
+.ctaOut .slot {
+  position: relative;
+}
+
+/* Centred on the slot by its insets (translate is the hand-off's). */
+.ctaOut .cta {
+  position: absolute;
+  inset-block: 0;
+  right: 0;
+  height: fit-content;
+  margin-block: auto;
+}
+
+.ctaOut[data-cta="shown"] .shift {
+  transform: translateX(calc(-1 * var(--handoff-x, 0px)));
+}
+
+.bar[data-cta="hidden"]:not(.ctaOut) .shift {
+  transform: translateX(var(--handoff-x, 0px));
+}
+
+/* The switch is a two-letter word: its target is 44px wide without moving
+   the letters (padding taken back by the margin). */
+.lang {
+  padding-inline: var(--space-xs);
+  margin-inline: calc(-1 * var(--space-xs));
+}
+
+/*
+ * The menu toggle names its action (§7.3): "Menu", then "Close" / "Fermer"
+ * while the sheet is open. "Menu" sizes the 44×44 target, so the closed bar
+ * is untouched in both languages; "Close" lies over it out of flow, end-
+ * aligned on the margin (Fermer runs 10px further left). The two swap by
+ * opacity only: out in 90ms, in over 110ms after 50ms (160ms in all), no
+ * travel. The state is the popover's own (:popover-open), so the swap works
+ * without JS; BarBehaviour sets aria-expanded and keeps the hidden label
+ * out of the accessible name from the first frame.
+ */
+.bar .menuButton {
+  position: relative;
+  font-size: var(--step-ui);
+}
+
+.toggleLabel {
+  transition:
+    opacity 110ms var(--ease-out) 50ms,
+    visibility 0s linear 0s;
+}
+
+/* Out of flow, so it carries the text button's underline itself. Three
+   separate rules on purpose: the CSS minifier merges a selector list into
+   a neighbour with the same declarations and drops its :has() half. */
+.toggleLabel[data-label="close"] {
+  position: absolute;
+  inset-block: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  text-decoration-line: underline;
+  text-decoration-thickness: var(--underline-thickness);
+  text-underline-offset: var(--underline-offset);
+  text-decoration-color: inherit;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 90ms var(--ease-out),
+    visibility 0s linear 90ms;
+}
+
+.bar:has(.menu:popover-open) .toggleLabel[data-label="close"] {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 110ms var(--ease-out) 50ms,
+    visibility 0s linear 0s;
+}
+
+.bar:has(.menu:popover-open) .toggleLabel[data-label="menu"] {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 90ms var(--ease-out),
+    visibility 0s linear 90ms;
+}
+
+/* While the sheet is open it carries Email me and the language switch at
+   full size, so the bar's own pair fades out with "Menu" (one primary
+   action per screen) and the target reaches over its place (12px, layout-
+   neutral) to hold "Fermer". It all comes back with "Menu". */
+.slot {
+  transition:
+    opacity 110ms var(--ease-out) 50ms,
+    visibility 0s linear 0s;
+}
+
+@media (max-width: 767px) {
+  .bar:has(.menu:popover-open) .slot {
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 90ms var(--ease-out),
+      visibility 0s linear 90ms;
+  }
+
+  .bar:has(.menu:popover-open) .menuButton {
+    min-width: calc(var(--target-min) + var(--space-xs));
+    padding-left: var(--space-xs);
+    margin-left: calc(-1 * var(--space-xs));
+  }
+}
+
+/*
+ * Phone menu (§7.3): a full-height sheet under the bar, on the bar's field,
+ * opaque from its first frame. It unrolls from the bar's edge (clip-path,
+ * 240ms drawer curve; rolls back up in 180ms) and its contents fade in and
+ * travel the last 8px. The page never shows through it, so the hero's
+ * Email me cannot read as a menu item.
+ */
+.menu {
+  position: fixed;
+  inset: var(--bar) 0 0 0;
+  width: 100%;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: 0;
+  border: 0;
+  padding: var(--space-s) var(--margin) var(--space-xl);
+  background-color: var(--field-bg);
+  color: var(--field-ink);
+  clip-path: inset(0 0 0 0);
+  transition:
+    clip-path var(--dur-exit) var(--ease-out),
+    display var(--dur-exit) allow-discrete,
+    overlay var(--dur-exit) allow-discrete;
+}
+
+.menu:not(:popover-open) {
+  clip-path: inset(0 0 100% 0);
+}
+
+.menu:popover-open {
+  transition:
+    clip-path var(--dur-ui) var(--ease-drawer),
+    display var(--dur-ui) allow-discrete,
+    overlay var(--dur-ui) allow-discrete;
+}
+
+@starting-style {
+  .menu:popover-open {
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+.menu > * {
+  transition:
+    opacity var(--dur-exit) var(--ease-out),
+    transform var(--dur-exit) var(--ease-out);
+}
+
+.menu:not(:popover-open) > * {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.menu:popover-open > * {
+  transition:
+    opacity var(--dur-ui) var(--ease-out) var(--menu-delay, 40ms),
+    transform var(--dur-ui) var(--ease-drawer) var(--menu-delay, 40ms);
+}
+
+.menu:popover-open > :nth-child(2) {
+  --menu-delay: 90ms;
+}
+
+@starting-style {
+  .menu:popover-open > * {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+/* Reduced motion: no unrolling, no travel; the contents fade (§5.4). */
+@media (prefers-reduced-motion: reduce) {
+  .menu,
+  .menu:not(:popover-open) {
+    clip-path: none;
+  }
+
+  .menu > *,
+  .menu:not(:popover-open) > * {
+    transform: none;
+  }
+
+  .menu:popover-open > * {
+    transition-duration: 200ms;
+  }
+}
+
+.menu::backdrop {
+  background: transparent;
+}
+
+.menuLinks {
+  display: grid;
+  margin-bottom: var(--space-l);
+}
+
+.menuLink {
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--step-2);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-display);
+  text-decoration-color: transparent;
+}
+
+.menuLink[aria-current] {
+  text-decoration-color: currentColor;
+}
+
+.menuWays {
+  display: grid;
+  gap: var(--space-s);
+  justify-items: start;
+}
+
+/* ── Widths ── */
+@media (max-width: 767px) {
+  .desktopOnly {
+    display: none !important;
+  }
+}
+
+/* Phones: the switch is a text button beside Menu, so it carries the same
+   40% underline. Under 600 the right group's three gaps are all 16px. */
+@media (max-width: 767px) {
+  .lang,
+  .textOnPhone {
+    text-decoration-color: color-mix(in srgb, currentColor var(--underline-rest), transparent);
+  }
+
+  /* The 404's CV: a 44px-wide target, its two letters centred in it. */
+  .textOnPhone {
+    min-width: var(--target-min);
+    justify-content: center;
+  }
+}
+
+/* The 404's switch, one per language ([data-nf]): a plain flex item.
+   Without JS the page shows both languages, English first, and the bar
+   shows only its English wordmark and switch (one line at 320). */
+.nfSwitch {
+  display: inline-flex;
+}
+
+:global(html:not(.js)) .bar [data-nf="fr"] {
+  display: none;
+}
+
+@media (max-width: 599px) {
+  .right {
+    gap: var(--space-s);
+  }
+}
+
+@media (min-width: 600px) {
+  .slot {
+    gap: var(--space-m);
+  }
+}
+
+/* Under 430: the wordmark, the switch, the French Email me (Écrivez-moi)
+   and Menu share 358px at 390, so the gaps tighten and the wordmark steps
+   down to "Artëm" while Email me shows; under 390 it also steps to 15px.
+   Nothing runs past the margin. */
+@media (max-width: 429px) {
+  .bar {
+    --bar-btn-pad: 12px;
+    gap: var(--space-xs);
+  }
+
+  .right {
+    gap: var(--space-s);
+  }
+
+  /* The surname leaves inside the hand-off, never in a snap: it fades out
+     (100ms) and only then gives its room up, before the button arrives at
+     120ms; it comes back once the button has gone (100ms), fading in. */
+  .surname {
+    transition:
+      opacity 100ms var(--ease-out),
+      display 100ms allow-discrete;
+  }
+
+  .bar[data-cta="shown"] .surname {
+    opacity: 0;
+    display: none;
+  }
+
+  .bar[data-cta="hidden"] .surname {
+    transition-delay: 100ms;
+  }
+
+  @starting-style {
+    .bar[data-ready][data-cta="hidden"] .surname {
+      opacity: 0;
+    }
+  }
+}
+
+@media (max-width: 389px) {
+  .wordmark {
+    font-size: var(--step--1);
+  }
+}
+
+/* Under 360 (320 and 200% zoom) the bar keeps its language switch; Email me
+   stays in the page and at the top of the menu. */
+@media (max-width: 359px) {
+  .phoneCta {
+    display: none;
+  }
+
+  .bar[data-cta] .surname {
+    display: inline;
+    opacity: 1;
+  }
+}
+
+@media (min-width: 768px) {
+  .phoneOnly {
+    display: none !important;
+  }
+
+  .nav {
+    display: block;
+    margin-left: auto;
+  }
+
+  .right {
+    gap: var(--space-l);
+  }
+
+  .nav + .right {
+    margin-left: var(--space-xl);
+  }
+
+  .slot {
+    gap: var(--space-l);
+  }
+}
+
+/* 768–1023: the nav sits against the right group, so it travels with it,
+   and the gaps tighten so French (Projets Méthode Parcours · CV EN
+   Écrivez-moi) clears the wordmark at 768 with the bar's Email me shown. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .nav {
+    transition: transform var(--dur-ui) var(--ease-out) var(--links-delay);
+  }
+
+  .nav + .right {
+    margin-left: var(--space-2xs);
+  }
+
+  .right,
+  .slot {
+    gap: var(--space-m);
+  }
+
+  .ctaOut[data-cta="shown"] .nav {
+    transform: translateX(calc(-1 * var(--handoff-x, 0px)));
+  }
+
+  .bar[data-cta="hidden"]:not(.ctaOut) .nav {
+    transform: translateX(var(--handoff-x, 0px));
+  }
+}
+
+@media (min-width: 1024px) {
+  .bar {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--gutter);
+  }
+
+  .wordmark {
+    grid-column: 1 / span 3;
+    justify-self: start;
+  }
+
+  .caseLabel {
+    display: inline-flex;
+    grid-column: 4 / span 3;
+    justify-self: start;
+  }
+
+  .nav {
+    grid-column: 7 / span 3;
+    margin-left: 0;
+  }
+
+  /* Under 1200 the French nav and the right group (with Email me shown)
+     would meet: the nav starts one column earlier. */
+  @media (max-width: 1199px) {
+    .nav {
+      grid-column: 6 / span 4;
+    }
+  }
+
+  .right {
+    grid-column: 10 / span 3;
+    justify-self: end;
+    margin-left: 0;
+  }
+
+  /* One row, whatever the columns: auto-placement never drops a group onto
+     a second row over the page. */
+  .wordmark,
+  .caseLabel,
+  .nav,
+  .right {
+    grid-row: 1;
+  }
+}
+
+/* 1024–1199 on a case page: the case's name and years (up to "Paiements
+   AppBazar, 2022–2023", 225px) cannot share columns 4–6 with the nav, which
+   starts at column 6 here. The wordmark steps down to "Artëm" (its name is
+   unchanged: the link is labelled), as it does on phones, and the case
+   label takes columns 2–4, on one line. */
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .withLabel .surname {
+    display: none;
+  }
+
+  .withLabel .wordmark {
+    grid-column: 1 / span 1;
+  }
+
+  .withLabel .caseLabel {
+    grid-column: 2 / span 3;
+  }
+}

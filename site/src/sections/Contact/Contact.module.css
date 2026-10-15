@@ -1,0 +1,880 @@
+/*
+ * The close (02-home.md §10, 01 §7.14): orange field, ink text only.
+ * Token values only; the address size is the page's one size outside the
+ * scale, derived from its measured advance (8.1475em; halves 4.0 / 4.148em),
+ * and Copy at the statement step beside it is the chapter's one UI label
+ * above 17px (it shares a baseline with a 150px line).
+ *
+ * From 1024px, one screen in three bands on two left edges (column 1 and
+ * column 7):
+ *   1. the ask: H2 on columns 1–6 (two lines) · the statement on 7–12, on
+ *      the H2's last baseline;
+ *   2. the address across the measure, Copy 24px after it on its baseline;
+ *   3. the letter on 1–6 in three rows (sentence · button · note) · the
+ *      other ways on 7–12 hanging on those rows: LinkedIn and the CV on the
+ *      sentence's first baseline, the AI twin on the button's label.
+ *   The gaps share the screen's spare height (fr rows with floors), so the
+ *   close fits 100svh down to 768px tall and breathes up to 1000px.
+ * 600–1023: one column of bands, 96px apart; the ways in two rows.
+ * Under 600: its own composition. The address breaks at the @ and fills the
+ *   measure (≈86px at 390), Copy under it; each clause of the letter starts
+ *   its own line; the button runs full width.
+ */
+.root {
+  display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  column-gap: var(--gutter);
+  align-content: start;
+  padding-inline: var(--margin);
+  /* The bar rides over the top of the field on the home; the block clears it. */
+  padding-block: var(--close-top) var(--close-bottom);
+  --close-top: calc(var(--bar) + var(--space-2xl));
+  --close-bottom: var(--space-3xl);
+  --close-gap: var(--space-3xl);
+  /* The ink rules (blanks) and the composer's line. */
+  --rule: 2px;
+  --composer-leading: 1.45;
+  /* League Spartan's content box (measured): ascent 0.70em, descent 0.22em. */
+  --addr-lh: 1;
+}
+
+/* Every ring in the close is ink from its first frame (the reduced-motion
+   clamp would otherwise fade it in from the label's colour). */
+.root :is(a, button, input, textarea) {
+  outline-color: var(--focus-color);
+}
+
+/* ── Band 1: the ask ──────────────────────────────────────────────────── */
+.title {
+  grid-column: 1 / -1;
+  margin: 0;
+  /* optical: the S's curve sits 0.04em inside the margin line */
+  margin-inline-start: -0.04em;
+}
+
+.statement {
+  grid-column: 1 / -1;
+  margin: var(--space-m) 0 0;
+}
+
+/* ── #contact-actions: the address, the composer, the other ways ──────── */
+.actions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  row-gap: var(--close-gap);
+  margin-top: var(--close-gap);
+}
+
+/* ── Band 2: the address and Copy ─────────────────────────────────────── */
+/* Copy's column is as wide as its longest label; the address cell takes the
+   rest and is its own size container, so the address fills it exactly and
+   Copy starts one gap after the last letter (the gap counts the side
+   bearings of "m" and "C", so the ink sits 24px apart). */
+.addressRow {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: calc(var(--space-m) - var(--space-3xs));
+  align-items: baseline;
+}
+
+.addressCell {
+  container-type: inline-size;
+  min-width: 0;
+  margin: 0;
+}
+
+.addressPart {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: calc(100cqi / 8.1475);
+  line-height: var(--addr-lh);
+  letter-spacing: var(--tracking-giant);
+  white-space: nowrap;
+}
+
+/* The link holds the letters and the rule's twin. The a's side bearing
+   (0.0195em, measured) is taken back so the ink meets the margin. A press
+   takes the row scale from the left edge: the word never dims to brown. */
+.address {
+  position: relative;
+  display: inline-block;
+  margin-inline-start: -0.0195em;
+  color: inherit;
+  text-decoration: none;
+  transform-origin: 0 50%;
+  transition: transform var(--dur-press) var(--ease-out);
+}
+
+.address:active {
+  opacity: 1;
+  transform: scale(var(--press-scale-row));
+}
+
+.address:focus-visible {
+  outline-offset: 0.06em;
+}
+
+/* The letters as the reader sees (and selects) them. */
+.glyphLayer {
+  display: inline;
+}
+
+/* A half of the address is the mask its letters rise from: its line box
+   (0.74em above the baseline, 0.26em under it at line-height 1). */
+.half,
+.glyph,
+.ruleHalf,
+.ruleGlyph {
+  display: inline-block;
+}
+
+/*
+ * The underline: a twin of the address in transparent ink lies on it, and
+ * each of its letters carries one segment of the rule, 0.04em thick at
+ * baseline + 0.12em. A descender (the g) has none, and its neighbours stop
+ * 0.06em clear of its tail (the tail's ink spans 0.036–0.50em of its box at
+ * that depth, measured), so the rule breaks the way skip-ink does and
+ * visibly belongs to the word. The twin never moves with the letters.
+ */
+.ruleLayer {
+  position: absolute;
+  inset: 0;
+  color: transparent;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.ruleGlyph {
+  position: relative;
+}
+
+.ruleGlyph::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  /* (line-height − 0.92em) / 2 + 0.70em ascent + 0.12em */
+  top: calc((var(--addr-lh) - 0.92) * 0.5em + 0.82em);
+  height: 0.04em;
+  background-color: var(--field-ink);
+  transform-origin: 50% 0;
+  transition: transform var(--dur-hover) var(--ease-hover);
+}
+
+.ruleGlyph[data-skip]::after {
+  display: none;
+}
+
+.ruleGlyph[data-skip-end]::after {
+  inset-inline-end: 0.024em;
+}
+
+.ruleGlyph[data-skip-start]::after {
+  inset-inline-start: 0.035em;
+}
+
+/* Hover thickens the rule toward the inline links' 0.07em weight. */
+@media (hover: hover) and (pointer: fine) {
+  .address:hover .ruleGlyph::after {
+    transform: scaleY(1.75);
+  }
+}
+
+/* Copy works only with script: no dead control without it. */
+.copyCell {
+  display: none;
+  justify-self: start;
+}
+
+:global(html.js) .copyCell {
+  display: block;
+}
+
+/* Copy: a text button at the statement step. The letters both labels share
+   ("Cop", "Copi") are one static run; only the rest crossfades, in place
+   (160ms through a 2px blur), so the word never doubles. Each run draws its
+   own underline (an inline-grid takes no decoration from its parent). */
+.copy {
+  font-size: var(--step-1);
+  text-decoration-line: none;
+}
+
+.copyFace {
+  white-space: nowrap;
+}
+
+.copyPrefix,
+.copySuffix {
+  text-decoration-line: underline;
+  text-decoration-thickness: var(--underline-thickness);
+  text-underline-offset: var(--underline-offset);
+  text-decoration-color: color-mix(in srgb, currentColor var(--underline-rest), transparent);
+  transition: text-decoration-color var(--dur-hover) var(--ease-hover);
+}
+
+.copySuffixes {
+  display: inline-grid;
+  justify-items: start;
+}
+
+.copySuffix {
+  grid-area: 1 / 1;
+  transition:
+    opacity var(--copy-fade) var(--ease-out),
+    filter var(--copy-fade) var(--ease-out),
+    visibility 0s,
+    text-decoration-color var(--dur-hover) var(--ease-hover);
+  --copy-fade: 160ms;
+}
+
+/* The label going out is hidden once its fade ends: one label on top. */
+.copySuffix + .copySuffix,
+.copy[data-copied] .copySuffix:first-child {
+  opacity: 0;
+  filter: blur(2px);
+  visibility: hidden;
+  transition:
+    opacity var(--copy-fade) var(--ease-out),
+    filter var(--copy-fade) var(--ease-out),
+    visibility 0s linear var(--copy-fade);
+}
+
+.copy[data-copied] .copySuffix + .copySuffix {
+  opacity: 1;
+  filter: none;
+  visibility: visible;
+  transition:
+    opacity var(--copy-fade) var(--ease-out),
+    filter var(--copy-fade) var(--ease-out),
+    visibility 0s;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .copy:hover :is(.copyPrefix, .copySuffix) {
+    text-decoration-color: currentColor;
+  }
+}
+
+/* Keyboard focus snaps the underline to full ink with its ring. */
+.copy:focus-visible :is(.copyPrefix, .copySuffix) {
+  text-decoration-color: currentColor;
+}
+
+/* ── Band 3: the letter (graft #8), at the statement step ─────────────── */
+/* Three rows: the sentence, the button 24px under it, the note. */
+.composer {
+  display: none;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-content: start;
+  min-width: 0;
+}
+
+:global(html.js) .composer {
+  display: grid;
+}
+
+/* The sentence is a form: open leading, so a rule under one line never
+   crowds the caps of the next. */
+.composer .sentence {
+  grid-column: 1 / -1;
+  max-width: none;
+  margin: 0;
+  line-height: var(--composer-leading);
+  text-wrap: wrap;
+}
+
+/* The mark after a blank paints over the blank's focus slot, never under it. */
+.glue {
+  position: relative;
+}
+
+/* "…nobody owns it." keeps its own stop: the sentence's goes quiet. */
+.blank[data-terminal] + .glue[data-stop] {
+  visibility: hidden;
+}
+
+/* A clause ("The role: [Role].") moves to a new line whole while it fits,
+   and wraps inside itself when a long answer needs it, between its units:
+   the words before a blank stay with it ("chez [Entreprise]."). */
+.clause,
+.unit {
+  display: inline-block;
+  max-width: 100%;
+}
+
+/* A blank and the mark after it never part. */
+.blankGroup {
+  white-space: nowrap;
+}
+
+/*
+ * A blank: the input sits in one grid cell with two hidden sizers. The cell
+ * is as wide as the wider of (its name + 0.4ch) and (the answer + 0.4ch):
+ * empty, the rule ends just past the name (≤ 8px at 1440, ≤ 5px at 390) and
+ * the stop follows 0.12em after it; the line only grows as you type, and no
+ * answer scrolls out of its field. Script writes data-value as you type.
+ */
+.blank {
+  position: relative;
+  display: inline-grid;
+  max-inline-size: 100%;
+  vertical-align: baseline;
+}
+
+.blank::before,
+.blank::after {
+  grid-area: 1 / 1;
+  visibility: hidden;
+  white-space: pre;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
+.blank::before {
+  content: attr(data-ph);
+  padding-inline-end: 0.4ch;
+  font-weight: var(--weight-statement);
+}
+
+.blank::after {
+  content: attr(data-value);
+  padding-inline-end: 0.4ch;
+  font-weight: var(--weight-display);
+}
+
+/* The rule ends before the full stop or comma that follows the blank. */
+.blankGroup > .blank:not(:last-child) {
+  margin-inline-end: 0.12em;
+}
+
+.input {
+  grid-area: 1 / 1;
+  /* no intrinsic width of its own (an input is 20 characters wide by
+     default): the sizers set the cell, the field fills it */
+  width: 0;
+  min-width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  /* the reader's own words, set heavier than the sentence around them */
+  font-weight: var(--weight-display);
+  line-height: inherit;
+  appearance: none;
+  outline: none;
+}
+
+/* Placeholders name the blanks, in the sentence's weight (their alpha is
+   the field's, globals.css: 86% on orange). */
+.input::placeholder {
+  font-weight: var(--weight-statement);
+}
+
+.input:focus-visible {
+  outline: none;
+}
+
+/* The problem gets the last line to itself: a textarea that grows with
+   the answer (its sizer wraps the same way), the full stop on its last line. */
+.chaosRow {
+  display: flex;
+  align-items: last baseline;
+  column-gap: 0.12em;
+}
+
+.chaos {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.chaos::before,
+.chaos::after {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.chaos::after {
+  content: attr(data-value) " ";
+}
+
+.chaos .input {
+  height: 100%;
+  overflow: hidden;
+  resize: none;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+/* The blank's focus mark replaces the ring: the slot lifts one tone (ink on
+   it 6.21:1) and the rule doubles to 4px. Keyboard focus moves instantly. */
+.blank:focus-within {
+  background-color: var(--orange-hover);
+}
+
+/* The 2px ink rule, just under the descenders (baseline + 0.28em): a clip
+   track with the ink inside, so it draws in by transform alone. */
+.rule {
+  position: absolute;
+  inset-inline: 0;
+  bottom: calc((var(--composer-leading) * 0.5 - 0.52) * 1em - var(--rule));
+  height: var(--rule);
+  overflow: hidden;
+  transform-origin: 50% 100%;
+  pointer-events: none;
+}
+
+.ruleInk {
+  display: block;
+  height: 100%;
+  background-color: currentColor;
+}
+
+.blank:focus-within .rule {
+  transform: scaleY(2);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .rule {
+    transition: transform var(--dur-press) var(--ease-out);
+  }
+
+  .blank:hover .rule {
+    transform: scaleY(1.5);
+  }
+
+  .blank:focus-within .rule {
+    transform: scaleY(2);
+    transition: none;
+  }
+}
+
+/* "Write the email": the chapter's one filled button, the shared primary
+   (56px, 28px sides, label centred, press 0.97 over 140ms), the width of its
+   label from 600px and of the measure under it. The slot carries the
+   entrance, so the press keeps its own timing. */
+.sendSlot {
+  grid-column: 1 / -1;
+  display: flex;
+  margin-top: var(--space-m);
+}
+
+/* Reduced motion: the press is its own step (the hover already took
+   --ink-step), so a press never looks like a hover. */
+@media (prefers-reduced-motion: reduce) {
+  .sendButton:active {
+    opacity: 0.85;
+  }
+
+  .address:active {
+    transform: none;
+    opacity: 0.85;
+  }
+}
+
+/* The note in Small under the button, each sentence kept whole. */
+.note {
+  grid-column: 1 / -1;
+  margin: var(--space-xs) 0 0;
+}
+
+.noteSentence {
+  white-space: nowrap;
+}
+
+/* ── No JS: one textarea on a 2px rule (02 §10.1), the same three rows ── */
+.fallback {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-content: start;
+  min-width: 0;
+}
+
+:global(html.js) .fallback {
+  display: none;
+}
+
+.fallbackField {
+  grid-column: 1 / -1;
+  display: grid;
+  justify-items: start;
+}
+
+.fallbackLabel {
+  font-weight: var(--weight-ui);
+}
+
+.textarea {
+  width: 100%;
+  max-width: none;
+  min-height: calc(3lh + var(--space-2xs));
+  margin-top: var(--space-2xs);
+  padding: 0 0 var(--space-2xs);
+  border: 0;
+  border-bottom: var(--rule) solid currentColor;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  resize: none;
+  field-sizing: content;
+}
+
+/* ── The other ways ──────────────────────────────────────────────────── */
+/* Each is its link (Figtree 600 at body size, at the foot of its 44px
+   target, so the ring holds the label alone) with its description in Small
+   under it. Rows read 32px apart: the targets already hold ~14px above each
+   label. */
+.ways {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-content: start;
+  row-gap: var(--space-s);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.way {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.way a {
+  align-items: flex-end;
+}
+
+.way .cv {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.wayNote,
+.way .cv > span {
+  margin-top: var(--space-3xs);
+  max-width: 46ch;
+  font-size: var(--step--1);
+  line-height: var(--leading-small);
+  color: var(--field-ink);
+  text-wrap: pretty;
+}
+
+/* The AI twin's description runs two lines in both languages. */
+.way .aiNote {
+  max-width: 38em;
+}
+
+/* A half of the address never breaks inside itself. */
+.half,
+.ruleHalf {
+  white-space: nowrap;
+}
+
+/* ── Widths ──────────────────────────────────────────────────────────── */
+@media (max-width: 599px) {
+  .root {
+    --close-top: calc(var(--bar) + var(--space-xl));
+    --close-bottom: var(--space-2xl);
+    --close-gap: var(--space-2xl);
+    --addr-lh: 1.12;
+  }
+
+  .statement {
+    margin-top: var(--space-s);
+  }
+
+  /* The address breaks at the @ (a <wbr>): its longer half ("gmail.com",
+     4.148em) fills the measure, ≈86px at 390. Copy under it, start-aligned. */
+  .addressRow {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--space-2xs);
+  }
+
+  .addressPart {
+    font-size: calc(100cqi / 4.1481);
+    white-space: normal;
+  }
+
+  /* Each clause of the letter starts its own line. */
+  .clause {
+    display: block;
+  }
+
+  .sendButton {
+    flex: 1 1 auto;
+  }
+}
+
+@media (min-width: 600px) {
+  .composer,
+  .fallback {
+    grid-column: 1 / span 6;
+  }
+
+  .wayLinkedin {
+    grid-column: 1 / span 4;
+  }
+
+  .wayCv {
+    grid-column: 5 / span 4;
+  }
+
+  .wayAi {
+    grid-column: 1 / span 6;
+  }
+}
+
+/* From 1024px, one screen: the bands sit on the field's rows and the spare
+   height goes to the gaps (top 0.25 : 1 : 1 : bottom 0.5) on top of their
+   floors (12px under the bar, 32px over the address and 24px under it, the
+   letter's row adding its baseline shim, 48px under the note), so a tight
+   screen loses air evenly and never the floors. */
+@media (min-width: 1024px) {
+  .root {
+    min-height: min(100svh, 1000px);
+    padding-block: calc(var(--bar) + var(--space-xs)) var(--space-xl);
+    grid-template-rows:
+      [top] minmax(0, 0.25fr)
+      [ask] auto
+      [gap] minmax(0, 1fr)
+      [address] auto
+      [gap] minmax(0, 1fr)
+      [letter] auto calc(var(--space-m) + var(--btn-height)) auto
+      [end] minmax(0, 0.5fr);
+  }
+
+  .title {
+    grid-column: 1 / span 6;
+    grid-row: ask;
+    align-self: last baseline;
+  }
+
+  .statement {
+    grid-column: 7 / -1;
+    grid-row: ask;
+    align-self: last baseline;
+    margin: 0;
+  }
+
+  /* address · gap · the letter's three rows */
+  .actions {
+    grid-row: address / end;
+    grid-template-rows: subgrid;
+    row-gap: 0;
+    margin-top: 0;
+  }
+
+  .addressRow {
+    grid-row: 1;
+    margin-block: var(--space-l) var(--space-m);
+  }
+
+  .composer,
+  .fallback {
+    grid-row: 3 / span 3;
+    grid-template-rows: subgrid;
+  }
+
+  .ways {
+    grid-column: 7 / -1;
+    grid-row: 3 / span 3;
+    grid-template-rows: subgrid;
+    row-gap: 0;
+  }
+
+  /* LinkedIn and the CV on the sentence's first baseline; the AI twin on
+     the button's label, its description down the note's row (the button's
+     row is exactly 24px + the button, so a longer description only ever
+     deepens the note's row and never pushes the note off the button). */
+  .composer .sentence,
+  .fallbackField,
+  .sendSlot,
+  .wayLinkedin,
+  .wayCv,
+  .wayAi {
+    align-self: first baseline;
+  }
+
+  .wayLinkedin {
+    grid-column: 1 / span 3;
+    grid-row: 1;
+  }
+
+  .wayCv {
+    grid-column: 4 / span 3;
+    grid-row: 1;
+  }
+
+  .wayAi {
+    grid-column: 1 / -1;
+    grid-row: 2 / span 2;
+  }
+}
+
+/* ── Motion (02 §10.4). Hidden states exist only under html.js; without
+ *    script everything is simply there. CloseReveal times the parts
+ *    (reading order, 70ms apart; 40ms when the page rests on the chapter).
+ *    - the address, one quick gesture that ends first: its rule draws left
+ *      to right (420ms) while its letters rise out of their own line, 17ms
+ *      apart, 700ms each, each from a slightly different depth, so a
+ *      scattered line settles into one baseline (the chaos put in order):
+ *      legible by ~600ms, settled by ~1s. The letter waits 550ms for it;
+ *    - Copy rides with the address and lands with ".com" (on phones, under
+ *      the second line, it waits for that line's last letter);
+ *    - the letter rises; its blanks draw their rules as it lands, 45ms
+ *      apart; the button, the note and the ways arrive as UI;
+ *    - reduced motion: no travel, no split letters, no drawing; each part
+ *      fades in 180ms, in the same order.
+ *    Focus never waits for any of it. ──────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  .root {
+    --glyph-lead: 40ms;
+    --glyph-stagger: 17ms;
+    --glyph-rise: 700ms;
+    --rule-draw: 420ms;
+    --copy-lag: 100ms;
+  }
+
+  /* The address part itself never fades: its letters and its rule move. */
+  :global(html.js) [data-reveal-root] .addressPart[data-reveal]:not(:global(.is-in)) {
+    opacity: 1;
+    transform: none;
+  }
+
+  :global(html.js) [data-reveal-root] .addressPart:not(:global(.is-in)) .half,
+  :global(html.js) [data-reveal-root] .addressPart:global(.is-revealing) .half {
+    overflow: clip;
+  }
+
+  :global(html.js) [data-reveal-root] .addressPart:not(:global(.is-in)) .glyph {
+    transform: translate3d(0, calc(var(--addr-lh) * 1em + var(--g-extra, 0.1em)), 0);
+  }
+
+  :global(html.js) [data-reveal-root] .addressPart:not(:global(.is-in)) .ruleLayer {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  .glyph {
+    transition: transform var(--glyph-rise) var(--ease-out);
+    transition-delay: calc(var(--reveal-delay, 0ms) + var(--glyph-lead) + var(--i, 0) * var(--glyph-stagger));
+  }
+
+  /* At rest the clip is an inset too: inset() to none would not
+     interpolate, and the rule would appear whole. */
+  .ruleLayer,
+  .ruleHalf {
+    clip-path: inset(0);
+  }
+
+  .ruleLayer {
+    transition: clip-path var(--rule-draw) var(--ease-out);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  /* Phones: one stroke per line, the second as its letters start. */
+  @media (max-width: 599px) {
+    :global(html.js) [data-reveal-root] .addressPart:not(:global(.is-in)) .ruleLayer {
+      clip-path: inset(0);
+    }
+
+    :global(html.js) [data-reveal-root] .addressPart:not(:global(.is-in)) .ruleHalf {
+      clip-path: inset(0 100% 0 0);
+    }
+
+    .ruleLayer {
+      transition: none;
+    }
+
+    .ruleHalf {
+      transition: clip-path var(--rule-draw) var(--ease-out);
+      transition-delay: var(--reveal-delay, 0ms);
+    }
+
+    .ruleHalf ~ .ruleHalf {
+      transition-delay: calc(var(--reveal-delay, 0ms) + 150ms);
+    }
+
+    /* Copy sits under the second line: it comes with its last letter. */
+    .root {
+      --copy-lag: 240ms;
+    }
+  }
+
+  /* Copy rides with the address, shown once the line's first half is up,
+     and its rise lands with ".com" (CloseReveal starts it one stagger
+     after the address; the lag is the rest, short enough that a reader
+     scrolling at speed never finds it waiting). */
+  :global(html.js) [data-reveal-root] .copyCell[data-reveal]:global(.is-revealing) {
+    transition-delay: calc(var(--reveal-delay, 0ms) + var(--copy-lag));
+  }
+
+  /* Focus never lands on a part still on its way in: it is there at once. */
+  :global(html.js) .root [data-reveal]:global(.is-revealing):focus-within {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  /* Keyboard focus lands on a whole address, never on a hidden one. */
+  :global(html.js) [data-reveal-root] .addressPart:focus-within .half {
+    overflow: visible;
+  }
+
+  :global(html.js) [data-reveal-root] .addressPart:focus-within :is(.glyph, .ruleLayer, .ruleHalf) {
+    transform: none;
+    clip-path: inset(0);
+    transition: none;
+  }
+
+  /* The blanks draw their rules while the letter is still landing. */
+  :global(html.js) [data-reveal-root] .sentence:not(:global(.is-in)) .ruleInk {
+    transform: translate3d(-101%, 0, 0);
+  }
+
+  .ruleInk {
+    transition: transform 480ms var(--ease-out);
+    transition-delay: calc(var(--reveal-delay, 0ms) + 80ms + var(--rule-i, 0) * var(--stagger-ui));
+  }
+
+  .sentence:focus-within .ruleInk {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Reduced motion (01 §5.4): a 180ms opacity fade per part, in reading
+   order; nothing travels, splits or draws. */
+@media (prefers-reduced-motion: reduce) {
+  :global(html.js) .root [data-reveal]:not(:global(.is-in)) {
+    opacity: 0;
+  }
+
+  :global(html.js) .root [data-reveal]:global(.is-revealing) {
+    transition: opacity 180ms var(--ease-out);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  :global(html.js) .root [data-reveal]:not(:global(.is-in)):focus-within {
+    opacity: 1;
+    transition: none;
+  }
+
+  .copySuffix + .copySuffix,
+  .copy[data-copied] .copySuffix,
+  .copy[data-copied] .copySuffix:first-child {
+    filter: none;
+  }
+}

@@ -1,0 +1,627 @@
+/*
+ * The four compositions of the proof scenes (02-home.md §3.3–3.7, 01 §7.8).
+ * Phone first (4 columns, the scenes flow), then 8 columns, then the 12-column
+ * desktop composition at 1024px and up (pinned when the screen is tall
+ * enough, Proof.module.css). Positions are columns of the stage's grid;
+ * --colw (one stage column) sizes parts nested deeper.
+ *
+ * Desktop, every scene computes its figure's size --F (the fit rule) so its
+ * neighbours can stand on the figure's measured ink, never on a fixed column
+ * that the figure no longer reaches: no gap between a figure's ink and the
+ * block beside it grows past one column and two gutters (--gap-max). In
+ * this chapter the Giant step follows 30vw up to 40rem (the token stops at
+ * 30rem), so the 1440 compositions keep their proportions on wide screens.
+ * Each block sits between fr tracks under the bar (pinned), 1:1, or 1:2 for
+ * B's poster.
+ *
+ * Below 1024px every scene ends with its case link, after its last drawing,
+ * and its reference sits under its h3. Below 600px each figure is fitted to
+ * the phone's measure, so every scene holds one dominant mass.
+ */
+
+/* the link that closes a scene below 1024px */
+.sceneLink {
+  order: 1;
+  margin-top: var(--space-l);
+}
+
+@media (min-width: 1024px) {
+  .a,
+  .b,
+  .c,
+  .d,
+  .a .aFigure,
+  .b .bFigure,
+  .c .cFigure,
+  .d .dFigure {
+    --step-display: clamp(7.5rem, 30vw, 40rem);
+  }
+
+  .a,
+  .b,
+  .c,
+  .d {
+    --gap-max: calc(var(--colw) + 2 * var(--gutter));
+    /* the caps rise this share of the size above the figure's line box */
+    --cap-k: 0.0185;
+  }
+
+  .sceneLink {
+    order: 0;
+    margin-top: var(--space-2xs);
+  }
+}
+
+/* ══ A · over its scale: +100% ══════════════════════════════════════════ */
+.aHead,
+.aCopy,
+.aFigure,
+.aPair,
+.aStory > .sceneLink {
+  grid-column: 1 / -1;
+}
+
+.aStory {
+  display: contents;
+}
+
+.aHead {
+  grid-row: 1;
+}
+
+.aCopy {
+  grid-row: 2;
+}
+
+.aFigure {
+  --step-display: 14.5rem;
+  grid-row: 3;
+  margin-top: var(--space-xl);
+}
+
+.aPair {
+  grid-row: 4;
+  margin-top: var(--space-m);
+}
+
+/* The real screen at its native size, its caption under it. */
+.aShot {
+  grid-column: 1 / span 2;
+  grid-row: 5;
+  margin-top: var(--space-xl);
+}
+
+.aShot figure {
+  max-width: none;
+}
+
+.aShot img {
+  width: var(--shot-w);
+}
+
+/* Phone: the caption runs under the screen and its values, two lines. */
+.aShot figcaption {
+  width: calc(var(--colw) * 4 + var(--gutter) * 3);
+}
+
+/* Phone: the three values stand beside the screen, top to bottom. */
+.aStats {
+  grid-column: 3 / -1;
+  grid-row: 5;
+  align-self: start;
+  height: var(--shot-h);
+  margin-top: var(--space-xl);
+}
+
+.aStats ul {
+  height: 100%;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: space-between;
+}
+
+/* the way in closes the scene */
+.aStory > .sceneLink {
+  grid-row: 6;
+}
+
+@media (min-width: 600px) and (max-width: 1023px) {
+  /* the mess, then a clear breath before its number */
+  .aFigure {
+    --step-display: clamp(7.5rem, 30vw, 30rem);
+    margin-top: var(--space-2xl);
+  }
+
+  .aShot {
+    grid-column: 1 / span 3;
+  }
+
+  .aShot figcaption {
+    width: auto;
+  }
+
+  /* the values across the top of the screen's height */
+  .aStats {
+    grid-column: 4 / -1;
+    height: auto;
+  }
+
+  .aStats ul {
+    height: auto;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  /* the head band, the figure with its screen, the scale, the line under it */
+  .a {
+    --gap-min: var(--space-2xl);
+    --F: min(var(--step-display), calc((100cqw - var(--shot-w) - var(--gap-min)) / var(--fit)));
+    --a-gap: var(--space-l);
+    grid-template-rows: 1fr auto auto auto auto 1fr;
+  }
+
+  .aHead {
+    grid-column: 1 / span 6;
+    grid-row: 2;
+  }
+
+  /* the mess, beside the measure, hung from the measure's middle: the axis
+     the ×1 dot and the line under the scale share; the way in under it */
+  .aStory {
+    display: block;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-left: 50cqw;
+  }
+
+  .aCopy {
+    margin-top: 0;
+  }
+
+  /* first ink on the margin, sized by the fit rule against the screen */
+  .aFigure {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-self: start;
+    margin-top: calc(var(--a-gap) + var(--cap-k) * var(--F));
+  }
+
+  .aFigure > p {
+    width: calc(var(--F) * var(--fit));
+  }
+
+  /* the screen's top on the figure's cap line; right edge on the margin, or
+     --gap-max after the ink when the figure stops short of its measure */
+  .aShot {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-self: start;
+    align-self: start;
+    width: var(--shot-w);
+    margin-top: var(--a-gap);
+    margin-left: min(calc(100cqw - var(--shot-w)), calc(var(--F) * var(--fit) + var(--gap-max)));
+  }
+
+  /* the caption exactly the screen's width, under it */
+  .aShot figcaption {
+    width: var(--shot-w);
+    text-align: start;
+  }
+
+  .aPair {
+    grid-row: 4;
+    margin-top: var(--space-m);
+  }
+
+  /* The period's other figures, one Small line on the scale's caption line,
+     from the run's start (the ×1 dot's centre). */
+  .aStats {
+    grid-column: 1 / -1;
+    grid-row: 5;
+    height: auto;
+    margin-top: calc(-1 * var(--step--1) * var(--leading-small));
+    margin-left: 50cqw;
+  }
+
+  .aStats ul {
+    display: flex;
+    flex-wrap: wrap;
+    height: auto;
+    column-gap: var(--space-l);
+    row-gap: 0;
+  }
+
+  .aStats li {
+    display: block;
+    font-size: var(--step--1);
+    line-height: var(--leading-small);
+  }
+
+  .aStats li > span:first-child {
+    font-family: var(--font-text);
+    font-weight: var(--weight-ui);
+    font-size: inherit;
+    line-height: inherit;
+    letter-spacing: 0;
+  }
+
+  .aStats li > span:last-child {
+    display: inline;
+    margin-left: 0.3em;
+    font-size: inherit;
+    line-height: inherit;
+  }
+
+  /* The scale is said once, from the pair's zero, under the labels. */
+  .aPair [data-pair-measure] {
+    margin-inline-start: 0;
+  }
+
+  /* Short screens: the block is the screen and its caption plus the scale,
+     whatever the figure's size, so its gaps give way first. The way in keeps
+     its 44px target; the target's slack overlaps the gaps around it. */
+  @media (max-height: 860px) {
+    .a {
+      --a-gap: var(--space-m);
+    }
+
+    .aStory .sceneLink {
+      margin-top: calc(-1 * var(--space-2xs));
+      margin-bottom: calc(-1 * var(--space-xs));
+    }
+
+    .aPair [data-pair-measure] {
+      padding-top: var(--space-2xs);
+    }
+  }
+}
+
+/* ══ B · quote poster: 2× ════════════════════════════════════════════════ */
+.bText {
+  display: contents;
+}
+
+.bText > *,
+.edge,
+.bFigure,
+.quote {
+  grid-column: 1 / -1;
+}
+
+/* the right margin: 2× puts its last ink on it */
+.edge {
+  display: block;
+  height: 0;
+}
+
+/* a display-step line above it: the figure keeps the list gap (01 §4.1) */
+.bFigure {
+  --step-display: 12.5rem;
+  margin-top: var(--space-2xl);
+}
+
+/* the days the copy starts from, after the story */
+.bTypeset {
+  grid-column: 1 / -1;
+  margin-top: var(--space-l);
+}
+
+.quote {
+  margin: var(--space-l) 0 0;
+}
+
+.quoteText {
+  margin: 0;
+}
+
+/* the opening mark stays inside the measure until the margin can hold it */
+.hang {
+  display: inline;
+}
+
+.attribution {
+  margin-top: var(--space-2xs);
+}
+
+@media (min-width: 600px) and (max-width: 1023px) {
+  .bFigure {
+    --step-display: clamp(7.5rem, 30vw, 30rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  /* A Z: the story top left, 2× on the right margin with its cap a little
+     above the story's end, the managers' words a step under its baseline.
+     The free height splits 1:2, so the poster hangs from the top. */
+  .b {
+    --F: min(var(--step-display), calc((var(--colw) * 4 + var(--gutter) * 3) / var(--fit)));
+    --b-rise: 30px;
+    grid-template-rows: 1fr auto auto auto 2fr;
+  }
+
+  .bText {
+    display: block;
+    grid-column: 1 / span 6;
+    grid-row: 2;
+  }
+
+  .bCopy {
+    max-width: calc(var(--colw) * 5 + var(--gutter) * 4);
+  }
+
+  .edge {
+    grid-row: 2;
+    align-self: start;
+  }
+
+  /* the cap --b-rise above the story's last line box; the row ends on the
+     baseline (the line box runs 0.164em under it) */
+  .bFigure {
+    grid-column: 9 / -1;
+    grid-row: 3;
+    margin-top: calc(var(--cap-k) * var(--F) - var(--b-rise));
+    margin-bottom: calc(-0.164 * var(--F));
+  }
+
+  /* "Days ●—● hours" on the figure's baseline: the row ends there, and the
+     line's baseline sits a quarter of its line box above its bottom */
+  .bTypeset {
+    grid-column: 1 / span 8;
+    grid-row: 3;
+    align-self: end;
+    margin-top: 0;
+    margin-bottom: calc(-0.25 * var(--step-2) * var(--leading-tight));
+  }
+
+  /* the quote's baseline 0.266em of the figure under the figure's baseline
+     (115px at 1440); its own baseline sits 0.66 of its line box down */
+  .quote {
+    grid-column: 1 / span 6;
+    grid-row: 4;
+    margin-top: calc(0.266 * var(--F) - 0.66 * var(--step-1) * var(--leading-statement));
+  }
+
+  /* only the mark's own glyph hangs; French keeps its U+202F in the measure */
+  .hang {
+    position: absolute;
+    right: 100%;
+  }
+}
+
+/* ══ C · on its dot: 97% (the climax) ════════════════════════════════════ */
+.cText {
+  display: contents;
+}
+
+.cText > *,
+.cFigure,
+.cPair {
+  grid-column: 1 / -1;
+}
+
+/* The frame ends on the after dot's right edge, x(97%) + d/2, so the figure
+   already stands on its dot without JS; Figure inkRightTo then trims the
+   last glyph's side bearing (±1px). */
+.cFigure {
+  --step-display: 14.5rem;
+  margin-top: var(--space-xl);
+  margin-right: calc((100cqw - var(--pair-d-l)) * (1 - var(--after)));
+}
+
+.cPair {
+  margin-top: var(--space-m);
+}
+
+/* "about 97% / kept" ends on the dot's right edge, the edge the figure ends on
+   (it travels with the dot through the crossing). */
+.cPair [data-pair-label="after"][data-clamped] {
+  transform: translateX(calc(var(--d) - 100%));
+  text-align: end;
+}
+
+@media (min-width: 600px) and (max-width: 1023px) {
+  .cFigure {
+    --step-display: clamp(7.5rem, 30vw, 30rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  /* the story's column, then at least 64px of ink, then the figure ending on
+     its dot: the figure's measure runs from there to the dot's right edge */
+  .c {
+    --dot-r: calc(var(--after) * (100cqw - var(--pair-d-l)) + var(--pair-d-l));
+    --text-r: calc(var(--colw) * 4 + var(--gutter) * 3);
+    --F: min(var(--step-display), calc((var(--dot-r) - var(--text-r) - var(--space-2xl)) / var(--fit)));
+    grid-template-rows: 1fr auto auto 1fr;
+  }
+
+  /* the restructuring story at left, the h3's cap on the figure's cap line */
+  .cText {
+    display: block;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    max-width: var(--text-r);
+    margin-top: calc(-0.22 * var(--step-1));
+  }
+
+  /* right-aligned by ink onto the after dot (Figure inkRightTo, ±1px) */
+  .cFigure {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-top: calc(var(--cap-k) * var(--F));
+    margin-left: calc(var(--text-r) + var(--space-2xl));
+    margin-right: calc(100cqw - var(--dot-r));
+  }
+
+  /* margin to margin: the dot crosses from the forecast to 97% */
+  .cPair {
+    grid-row: 3;
+    margin-top: var(--space-2xl);
+  }
+
+  /* The scale is said once, from the pair's zero, under the labels. */
+  .cPair [data-pair-measure] {
+    margin-inline-start: 0;
+  }
+
+  /* Wide screens: the climax takes its whole measure (the story's column,
+     64px, then the figure to its dot), so the gap never grows past it. */
+  @media (min-width: 1600px) {
+    .c,
+    .c .cFigure {
+      --step-display: 40rem;
+    }
+  }
+
+  /* French needs the fifth column's width below 1280px to hold the story in
+     six lines; the figure gives way, the 64px stays. */
+  @media (max-width: 1279px) {
+    .c:lang(fr) {
+      --text-r: calc(var(--colw) * 4 + var(--gutter) * 5);
+    }
+  }
+}
+
+/* ══ D · unit field: 80+ ═════════════════════════════════════════════════ */
+/* Below 1024px every part has its row: the story, the figure, the struck
+   correction, the field beside the markets, then the link. */
+.dText {
+  display: contents;
+}
+
+.dText > *,
+.dFigure,
+.typeset {
+  grid-column: 1 / -1;
+}
+
+.dText > :nth-child(1) {
+  grid-row: 1;
+}
+
+.dText > :nth-child(2) {
+  grid-row: 2;
+}
+
+.dText > :nth-child(3) {
+  grid-row: 6;
+}
+
+.dFigure {
+  --step-display: 14.5rem;
+  grid-row: 3;
+  margin-top: var(--space-xl);
+}
+
+.typeset {
+  grid-row: 4;
+  margin-top: var(--space-m);
+}
+
+/* Phone: the field and the markets side by side. */
+.field {
+  grid-column: 1 / span 2;
+  grid-row: 5;
+  margin-top: var(--space-xl);
+}
+
+.markets {
+  grid-column: 3 / -1;
+  grid-row: 5;
+  align-self: start;
+  margin-top: var(--space-xl);
+  display: grid;
+  row-gap: var(--space-2xs);
+  align-content: start;
+}
+
+/* Phone: the field's caption runs under the field and the markets. */
+.field figcaption {
+  width: calc(var(--colw) * 4 + var(--gutter) * 3);
+  text-wrap: pretty;
+}
+
+/* place names never break inside a word */
+.marketsList {
+  hyphens: manual;
+}
+
+@media (min-width: 600px) and (max-width: 1023px) {
+  .dFigure {
+    --step-display: clamp(7.5rem, 30vw, 30rem);
+  }
+
+  .field {
+    grid-column: 1 / span 3;
+  }
+
+  .field figcaption {
+    width: auto;
+  }
+
+  .markets {
+    grid-column: 4 / span 4;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* The text column stands --gap-max after the figure's ink (or on column 8,
+     whichever is nearer); the field shares its edge; one dot is 12px at 1440
+     and scales with the column. */
+  .d {
+    --F: min(var(--step-display), calc((var(--colw) * 7 + var(--gutter) * 6) / var(--fit)));
+    --col-x: min(calc((var(--colw) + var(--gutter)) * 7), calc(var(--F) * var(--fit) + var(--gap-max)));
+    grid-template-rows: 1fr auto auto 1fr;
+  }
+
+  .dText > :nth-child(n) {
+    grid-row: auto;
+  }
+
+  /* first ink on the margin, the cap line at the row's top */
+  .dFigure {
+    grid-column: 1 / span 7;
+    grid-row: 2;
+    margin-top: calc(var(--cap-k) * var(--F));
+  }
+
+  /* the h3's cap line on the figure's cap line */
+  .dText {
+    display: block;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-top: calc(-0.22 * var(--step-1));
+    margin-left: var(--col-x);
+  }
+
+  /* the lower third as one line: the struck correction | the field | the markets */
+  .typeset {
+    grid-column: 1 / span 6;
+    grid-row: 3;
+    margin-top: var(--space-xl);
+  }
+
+  .field {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-self: start;
+    align-self: start;
+    margin-top: calc(var(--space-xl) + 0.22 * var(--step-1));
+    margin-left: var(--col-x);
+  }
+
+  .field [data-dot-field] {
+    --d: calc(var(--colw) * 0.1294);
+  }
+
+  .field figcaption {
+    width: auto;
+    max-width: 26ch;
+  }
+
+  .markets {
+    grid-column: 11 / -1;
+    grid-row: 3;
+    margin-top: calc(var(--space-xl) + 0.22 * var(--step-1) - 0.3 * var(--step-0));
+  }
+}

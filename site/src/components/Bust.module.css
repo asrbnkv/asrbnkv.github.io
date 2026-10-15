@@ -1,0 +1,14 @@
+/* The bust glyph (01-system.md §7.1, §8.3). */
+.bust {
+  display: inline-block;
+  height: clamp(4rem, calc(var(--step-2) * 0.9), 5.375rem);
+  width: auto;
+  max-width: none;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.small {
+  height: 4rem;
+}

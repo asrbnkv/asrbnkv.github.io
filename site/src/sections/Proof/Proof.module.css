@@ -1,0 +1,247 @@
+/*
+ * The proof chapter (02-home.md §3): ink throughout. The title card is the
+ * home's one centred moment and its declared rest; then four number scenes.
+ * Scene compositions live in Scenes.module.css; this file holds the shell
+ * (card, scene, stage, pin), the parts every scene shares, and the
+ * entrances that are not the system's rise (useSceneEnter.ts).
+ *
+ * Column spans: inside a stage (a size container) --colw is one column of
+ * the stage: calc(var(--colw) * n + var(--gutter) * (n - 1)).
+ */
+.root {
+  position: relative;
+}
+
+/* ── Title card: centred both ways in a full screen, under the bar. ── */
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-m);
+  min-height: 100svh;
+  padding: calc(var(--bar) + var(--space-3xl)) var(--margin) var(--space-3xl);
+  text-align: center;
+}
+
+.title,
+.statement {
+  --col: calc((100% - (var(--columns) - 1) * var(--gutter)) / var(--columns));
+  width: 100%;
+}
+
+.title {
+  max-width: calc(var(--col) * 9 + var(--gutter) * 8);
+}
+
+.statement {
+  max-width: calc(var(--col) * 7 + var(--gutter) * 6);
+}
+
+@media (min-width: 600px) and (max-width: 1279px) {
+  .statement {
+    max-width: calc(var(--col) * 8 + var(--gutter) * 7);
+  }
+}
+
+/* ── Scenes flow below 1024px (and on short screens): 96px of ink, then the scene. ── */
+.scene {
+  position: relative;
+}
+
+.stage {
+  --colw: calc((100cqw - (var(--columns) - 1) * var(--gutter)) / var(--columns));
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  column-gap: var(--gutter);
+  align-content: start;
+  padding: var(--space-3xl) var(--margin) 0;
+}
+
+.scene:last-child .stage {
+  padding-bottom: var(--space-3xl);
+}
+
+/* ── Pinned (keep in sync with PINNED in useSceneEnter.ts): a 160svh scene
+   holds a 100svh sticky stage (130svh when nothing scrubs); each
+   composition places its block in the space under the bar with fr tracks
+   above and below it (Scenes.module.css). ── */
+@media (min-width: 1024px) and (min-height: 780px) {
+  .scene {
+    height: 160svh;
+  }
+
+  .scene.short {
+    height: 130svh;
+  }
+
+  .stage {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    align-content: safe center;
+    padding: var(--bar) var(--margin) 0;
+  }
+
+  .scene:last-child .stage {
+    padding-bottom: 0;
+  }
+}
+
+/* ── Shared parts ── */
+.head {
+  display: grid;
+  row-gap: var(--space-2xs);
+  align-content: start;
+}
+
+.h3 {
+  text-wrap: balance;
+}
+
+.ref {
+  max-width: 44ch;
+}
+
+/* Short texts (40 words or fewer) never split a word, in either language. */
+.copy {
+  margin-top: var(--space-m);
+  text-wrap: pretty;
+  hyphens: manual;
+}
+
+@media (min-width: 600px) and (max-width: 1023px) {
+  .copy {
+    max-width: calc(var(--colw) * 6 + var(--gutter) * 5);
+  }
+}
+
+.link {
+  margin-top: var(--space-2xs);
+}
+
+.figure {
+  min-width: 0;
+}
+
+/* The stat row's three values, on the scene's column rhythm. */
+.stats > li:nth-child(2) {
+  --i: 1;
+}
+
+.stats > li:nth-child(3) {
+  --i: 2;
+}
+
+/* The quote: each word rises from behind its own baseline. */
+.word,
+.word > span {
+  display: inline-block;
+}
+
+.word > span {
+  position: relative;
+}
+
+/* ══ Entrances that are not the system's rise (useSceneEnter.ts, Scene.tsx).
+   Hidden states exist only under html.js and no-preference: without JS and
+   under reduced motion everything is simply there. ══ */
+@media (prefers-reduced-motion: no-preference) {
+  /* The figure rises from behind its own baseline, opacity 1 (900ms out). */
+  :global(html.js) .mask:not([data-enter-state="done"]) {
+    clip-path: inset(-30% -12% 0 -12%);
+  }
+
+  :global(html.js) .mask:not([data-enter-state]) > * {
+    transform: translate3d(0, 115%, 0);
+  }
+
+  .mask[data-enter-state="run"] > * {
+    transition: transform var(--dur-rise) var(--ease-out) var(--enter-delay, 0ms);
+  }
+
+  /* The quote, word by word (40ms apart). */
+  :global(html.js) .words:not([data-enter-state="done"]) .word {
+    clip-path: inset(-0.6em -1.2em -0.14em -1.2em);
+  }
+
+  :global(html.js) .words:not([data-enter-state]) .word > span {
+    transform: translate3d(0, 120%, 0);
+  }
+
+  .words[data-enter-state="run"] .word > span {
+    transition: transform var(--dur-rise) var(--ease-out);
+    transition-delay: calc(var(--enter-delay, 0ms) + var(--w, 0) * 40ms);
+  }
+
+  /* The stat row, item by item (--stagger-ui), 8px. */
+  :global(html.js) :global([data-enter]:not([data-enter-state])) > .stats > li {
+    opacity: 0;
+    transform: translate3d(0, var(--rise-ui), 0);
+  }
+
+  :global([data-enter-state="run"]) > .stats > li {
+    transition:
+      opacity var(--dur-fade) var(--ease-out),
+      transform var(--dur-rise) var(--ease-out);
+    transition-delay: calc(var(--enter-delay, 0ms) + var(--i, 0) * var(--stagger-ui));
+  }
+
+  /* A driven pair's labels are a state, never a function of the scroll
+     (pairDrive.ts): the start and before (or capsule) labels name the
+     starting point from the first frame; the after label waits for its dot
+     to land, then arrives in 240ms (160ms out; the timed parting's 500ms). */
+  :global(html.js) .scene [data-pair][data-drive] [data-pair-label="after"] {
+    opacity: 0;
+    transition: opacity 160ms var(--ease-out);
+  }
+
+  :global(html.js) .scene [data-pair][data-drive][data-landed] [data-pair-label="after"] {
+    opacity: 1;
+    transition-duration: var(--dur-ui);
+  }
+
+  :global(html.js) .scene [data-pair][data-drive="flow"][data-landed] [data-pair-label="after"] {
+    transition-duration: 500ms;
+  }
+
+  :global(html.js) .scene [data-pair][data-instant] [data-pair-label] {
+    transition: none;
+  }
+
+  /* D's field, counted in by the scene (fieldCount.ts): a dot shows once its
+     row is under --shown, with a 4px rise; the caption follows the last row. */
+  :global(html.js) .scene [data-field-host] [data-dot-field] > i {
+    opacity: clamp(0, (var(--shown, 0) - var(--row)) * 1000, 1);
+    transform: translate3d(0, calc(clamp(0, var(--row) - var(--shown, 0) + 1, 1) * 4px), 0);
+    transition:
+      opacity var(--dur-ui) var(--ease-out),
+      transform var(--dur-ui) var(--ease-out);
+    transition-delay: 0ms;
+  }
+
+  :global(html.js) .scene [data-field-host][data-count="cascade"] [data-dot-field] > i {
+    transition-duration: 400ms;
+    transition-delay: calc(var(--row) * 40ms);
+  }
+
+  :global(html.js) .scene [data-field-host]:not([data-full]) [data-dot-field] + figcaption {
+    opacity: 0;
+    transition: opacity 160ms var(--ease-out);
+  }
+
+  :global(html.js) .scene [data-field-host][data-full] [data-dot-field] + figcaption {
+    opacity: 1;
+    transition: opacity 300ms var(--ease-out);
+  }
+
+  :global(html.js) .scene [data-field-host][data-count="cascade"][data-full] [data-dot-field] + figcaption {
+    transition-delay: calc(var(--rows, 8) * 40ms);
+  }
+
+  :global(html.js) .scene [data-field-host][data-count="now"] [data-dot-field] > i,
+  :global(html.js) .scene [data-field-host][data-count="now"] [data-dot-field] + figcaption {
+    transition: none;
+  }
+}

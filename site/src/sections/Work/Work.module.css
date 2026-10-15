@@ -1,0 +1,642 @@
+/*
+ * `work` (02-home.md §4; 01 §7.12): seven cases, end to end. Paper field.
+ *
+ *   phone        under 600px: each row is its picture (16:10, full width),
+ *                its title (42px) and its metric line;
+ *   inline       600px and up, on touch at any width, and without JS: the
+ *                picture on 4 columns with the metric block beside it,
+ *                bottom-aligned, and the title under them on one line;
+ *   hover mode   (min-width: 1280px) and (hover: hover) and (pointer: fine),
+ *                under html.js: text rows (the title on the left, the metric
+ *                block on the plate's left edge) and one ink plate that
+ *                rides the viewport's middle beside them (WorkIndex).
+ *
+ * No rules, cards or boxes: rows are separated by space. Token values only.
+ * The stage itself (the ink room and what it holds) is Stage.module.css.
+ */
+
+.root {
+  container-type: inline-size;
+  padding-block: var(--section-gap);
+  padding-inline: var(--margin);
+}
+
+/* ── Head: the H2 on one line, the statement 24px under it. ── */
+.head {
+  display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  column-gap: var(--gutter);
+}
+
+.title {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.statement {
+  grid-column: 1 / -1;
+  margin: var(--space-m) 0 0;
+}
+
+@media (min-width: 1024px) {
+  .title {
+    grid-column: 1 / span 9;
+  }
+
+  .statement {
+    grid-column: 1 / span 6;
+  }
+}
+
+/* ── The index. In hover mode the stage band takes what the longest title
+ *    leaves at the display step (FR "Paiements AppBazar", 8.56em, plus the
+ *    0.12em hover cue and a gutter): 516px at 1440, 436 at 1280, never over
+ *    40rem; the plate stands on it 32px in, its right edge on the margin. ── */
+.index {
+  /* the stage band's width inside the margin, and the plate inset in it */
+  --stage-w: min(40rem, calc(100cqi - 8.72 * var(--step-2) - var(--gutter)));
+  --plate-w: calc(var(--stage-w) - var(--space-l));
+  --plate-h: calc(var(--plate-w) * 0.625);
+  --mark-out: var(--dur-ui); /* 240ms */
+  --mark-back: calc(var(--dur-ui) * 2 / 3); /* 160ms */
+  --cue-out: var(--dur-hover); /* 180ms */
+  --cue-back: calc(var(--dur-ui) * 2 / 3); /* 160ms */
+  position: relative;
+  margin-top: var(--space-2xl);
+}
+
+@media (min-width: 600px) {
+  .index {
+    margin-top: var(--space-3xl);
+  }
+}
+
+/* ── The list: one link per row, never underlined; it presses as one. ── */
+.list {
+  display: grid;
+  row-gap: var(--space-xl);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  color: inherit;
+  text-decoration: none;
+  transform-origin: 50% 50%;
+  transition: transform var(--dur-press) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* Rows press by scale only (02 §4.3), never with the links' 0.7 dim. */
+.row:active {
+  opacity: 1;
+  transform: scale(var(--press-scale-row));
+}
+
+.row:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: var(--focus-offset);
+}
+
+/* clip-path is always an inset (never none), so the entrance can interpolate */
+.pic {
+  display: block;
+  min-width: 0;
+  clip-path: inset(0 0 0 0);
+}
+
+/* The title rises from behind its own baseline: the mask is the title box,
+   padded so descenders and the J's overhang are never clipped at rest. */
+.rowTitle {
+  margin: var(--space-s) -0.06em -0.1em;
+  padding: 0 0.06em 0.1em;
+  overflow: clip;
+}
+
+/* The cue (hover or focus): the title steps 0.12em toward its picture. */
+.cue {
+  display: block;
+  transition: transform var(--cue-back) var(--ease-out);
+}
+
+.titleLine {
+  display: block;
+}
+
+/* ── Metric block: the S mark hangs before the figure; the caption runs on
+ *    after it on phones and drops under it from 600px; the period last. ── */
+.meta {
+  --slot: calc(4 * var(--pair-d-s));
+  --slot-gap: var(--space-xs);
+  margin: var(--space-2xs) 0 0;
+  font-family: var(--font-text);
+  font-size: var(--step--1);
+  line-height: var(--leading-small);
+}
+
+.metricLine {
+  display: block;
+  padding-left: calc(var(--slot) + var(--slot-gap));
+  text-indent: calc(-1 * (var(--slot) + var(--slot-gap)));
+}
+
+/* The slot holds no line box, so its baseline is its bottom edge: raising
+   that edge puts the dots' centre on the figures' optical middle (League
+   Spartan's cap height is about 0.7em of the figure's step). */
+.markSlot {
+  position: relative;
+  display: inline-block;
+  width: var(--slot);
+  height: var(--pair-d-s);
+  margin-right: var(--slot-gap);
+  vertical-align: calc(var(--step-1) * 0.35 - var(--pair-d-s) / 2);
+}
+
+.markSlot > [data-pair-mark] {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.metric {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--step-1); /* 22px on phones, the statement step above */
+  line-height: var(--leading-statement);
+  letter-spacing: var(--tracking-statement);
+  white-space: nowrap;
+}
+
+/* What the figure measures, in full ink; the period is the one muted line. */
+.caption {
+  text-indent: 0;
+}
+
+.period {
+  display: block;
+  padding-left: calc(var(--slot) + var(--slot-gap));
+  color: var(--field-muted);
+}
+
+/* ── The mark: it rests parted by one dot (grey, the run, orange: the
+ *    after dot at 2d) and parts to a 2d gap on hover or focus (after dot at
+ *    3d, 240ms out, 160ms back). It is the case's handle, never to scale. ── */
+.row [data-mark-after] {
+  transform: translateX(calc(var(--d) * 2));
+  transition: transform var(--mark-back) var(--ease-out);
+}
+
+.row [data-mark-bar] {
+  clip-path: inset(0 var(--d) 0 0);
+  transition: clip-path var(--mark-back) var(--ease-out);
+}
+
+.row:focus-visible [data-mark-after],
+.item[data-hot] [data-mark-after] {
+  transform: translateX(calc(var(--d) * 3));
+  transition-duration: var(--mark-out);
+}
+
+.row:focus-visible [data-mark-bar],
+.item[data-hot] [data-mark-bar] {
+  clip-path: inset(0 0 0 0);
+  transition-duration: var(--mark-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .row:hover [data-mark-after] {
+    transform: translateX(calc(var(--d) * 3));
+    transition-duration: var(--mark-out);
+  }
+
+  .row:hover [data-mark-bar] {
+    clip-path: inset(0 0 0 0);
+    transition-duration: var(--mark-out);
+  }
+}
+
+/* ── Inline, 600px and up: the picture on 4 columns (311px at 1024, 354 at
+ *    768) with the metric block beside it, bottom-aligned; the title under
+ *    them at the display step, on one line (FR included, measured). ── */
+@media (min-width: 600px) {
+  .row {
+    grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+    column-gap: var(--gutter);
+    align-items: end;
+  }
+
+  .pic {
+    grid-column: 1 / span 4;
+    grid-row: 1;
+  }
+
+  /* top-aligned (02 §4.5, amended): its last line never sits on the title */
+  .meta {
+    --slot-gap: var(--space-xs);
+    grid-column: 5 / -1;
+    grid-row: 1;
+    align-self: start;
+    margin: 0;
+  }
+
+  .rowTitle {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    white-space: nowrap;
+  }
+
+  .caption {
+    display: block;
+  }
+}
+
+/* ── Hover mode: each row is the title on the left (one line) and the
+ *    metric block on the plate's left edge, its last baseline on the
+ *    title's; 16px of padding around the title's line box (123px at 1440,
+ *    rows touch: no rules, no gaps). The pictures live on the plate. ── */
+@media (min-width: 1280px) and (hover: hover) and (pointer: fine) {
+  :global(html.js) .list {
+    row-gap: 0;
+  }
+
+  :global(html.js) .row {
+    grid-template-columns: minmax(0, 1fr) var(--stage-w);
+    align-items: last baseline;
+    min-height: calc(var(--space-3xl) + var(--space-s));
+    padding-block: var(--space-s);
+  }
+
+  :global(html.js) .pic {
+    display: none;
+  }
+
+  :global(html.js) .rowTitle {
+    grid-column: 1;
+    grid-row: 1;
+    margin-top: 0;
+  }
+
+  :global(html.js) .meta {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: last baseline;
+  }
+
+  /* The figure's line is set solid here, so the block's last baseline sits
+     no lower than the title's and the row keeps its 123px (7 rows: 862px). */
+  :global(html.js) .metric {
+    line-height: 1;
+  }
+
+  /* Metric blocks under the plate are gone in the frame it covers them (never
+     a figure cut by its edge) and fade back once it has moved on. */
+  :global(html.js) .item:global(.is-in):not(:global(.is-revealing)) .meta {
+    transition: opacity calc(var(--dur-ui) * 5 / 6) var(--ease-out);
+  }
+
+  :global(html.js) .item[data-under] .meta {
+    visibility: hidden;
+    opacity: 0;
+    transition: none;
+  }
+
+  :global(html.js) .track {
+    display: block;
+  }
+
+  /* The stage band (01 §8.1): the plate's whole track is an ink band that
+     runs off the window's right edge (hard cuts, no frame), so the numbers
+     beside the titles are paper on ink and the plate is a tone step on it. */
+  :global(html.js) .index {
+    isolation: isolate;
+  }
+
+  :global(html.js) .band {
+    display: block;
+  }
+
+  :global(html.js) .meta {
+    --field-ink: var(--paper);
+    --field-muted: var(--muted-on-ink);
+    --field-before: var(--band);
+    --field-after: var(--orange);
+    padding-left: var(--space-l);
+    background-color: var(--ink); /* the band's own ink, so the block names its ground */
+    color: var(--paper);
+    letter-spacing: var(--tracking-ink-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :global(html.js) .slide > [data-kind] {
+    background-color: var(--ink-step);
+  }
+
+  /* The ring stays on paper: it goes round the title, the row's visible edge. */
+  :global(html.js) .row:focus-visible {
+    outline: none;
+  }
+
+  :global(html.js) .row:focus-visible .rowTitle {
+    outline: 2px solid var(--focus-color);
+    outline-offset: var(--focus-offset);
+  }
+
+  /* The row the plate shows steps 0.12em toward it: the one under the
+     pointer, else the one beside the plate (WorkIndex sets data-cue), so
+     the picture and its title always agree, at rest and in a still. */
+  :global(html.js) .item[data-cue] .cue {
+    transform: translate3d(0.12em, 0, 0);
+    transition-duration: var(--cue-out);
+  }
+
+  /* here the script decides (a scroll under a resting pointer is not a hover) */
+  :global(html.js) .item:not([data-cue]) .row:hover .cue {
+    transform: none;
+    transition-duration: var(--cue-back);
+  }
+
+  /* Activation: the row keeps its state as the page leaves, and the number
+     the plate covered is back at once for the view transition's snapshot. */
+  :global(html.js) .index[data-instant] .cue,
+  :global(html.js) .index[data-instant] [data-mark-after],
+  :global(html.js) .index[data-instant] [data-mark-bar],
+  :global(html.js) .index[data-instant] .item:global(.is-in) .meta {
+    transition: none;
+  }
+}
+
+/* Inline rows under a fine pointer, and every focused row: the same cue. */
+@media (hover: hover) and (pointer: fine) {
+  .row:hover .cue {
+    transform: translate3d(0.12em, 0, 0);
+    transition-duration: var(--cue-out);
+  }
+}
+
+.row:focus-visible .cue {
+  transform: translate3d(0.12em, 0, 0);
+  transition: none;
+}
+
+/* ── The plate (hover mode; 01 §7.12, 02 §4.3): a 16:10 ink stage, its
+ *    right edge on the margin. Its track runs from the first row's middle
+ *    to the last row's (WorkIndex measures it), and inside it the plate is
+ *    sticky on the viewport's middle under the bar: while the list scrolls
+ *    it stays still and shows the row beside it. A pointer on a row moves
+ *    it there by transform (a spring); keyboard focus puts it right under
+ *    or over the focused row at once. ── */
+.band {
+  position: absolute;
+  top: var(--band-top, 0px);
+  right: calc(-1 * var(--margin));
+  z-index: -1;
+  display: none;
+  width: calc(var(--stage-w) + var(--margin));
+  height: var(--band-h, 0px);
+  background-color: var(--ink);
+  clip-path: inset(0 0 0 0);
+  pointer-events: none;
+}
+
+.track {
+  position: absolute;
+  top: var(--track-top, 0px);
+  right: 0;
+  z-index: 1;
+  display: none;
+  width: var(--plate-w);
+  height: var(--track-h, 0px);
+  pointer-events: none;
+}
+
+/* It stands in the upper part of the reading zone, so the row it shows is
+   the one the eye is on, and the rows above it keep their numbers in view. */
+.sticky {
+  position: sticky;
+  top: calc(var(--bar) + var(--space-l) + 12vh);
+  height: var(--plate-h);
+}
+
+.plate {
+  height: 100%;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.plate[hidden] {
+  display: none;
+}
+
+/* Shown and hidden from the edge that meets the rows (its left), at full
+   ink: never an ink slab fading through grey on paper. */
+.plateShow {
+  height: 100%;
+  clip-path: inset(0 0 0 0);
+  transition: clip-path var(--dur-ui) var(--ease-out);
+}
+
+.plate[data-state="off"] .plateShow {
+  clip-path: inset(0 100% 0 0);
+  transition-duration: calc(var(--dur-ui) * 2 / 3);
+}
+
+.plateReveal,
+.slides {
+  position: relative;
+  height: 100%;
+}
+
+.plateReveal {
+  clip-path: inset(0 0 0 0);
+}
+
+/* Pictures cross-dissolve in 160ms: the new one fades in over the last,
+   which leaves once it is covered (no dip through empty ink). */
+.slide {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity 0s linear calc(var(--dur-ui) * 2 / 3),
+    visibility 0s linear calc(var(--dur-ui) * 2 / 3);
+}
+
+.slide[data-on] {
+  z-index: 1;
+  visibility: visible;
+  opacity: 1;
+  transition:
+    opacity calc(var(--dur-ui) * 2 / 3) var(--ease-out),
+    visibility 0s;
+}
+
+/* Keyboard and activation: position and picture change in the same frame. */
+.plate[data-instant] .plateShow,
+.plate[data-instant] .slide {
+  transition: none;
+}
+
+/* ── Entrances (01 §5.2): each row is one trigger (data-reveal on the <li>)
+ *    and never fades as a whole. Inline: the picture opens from its bottom
+ *    edge (the one that meets its title) at full ink while its content
+ *    settles, the title rises from behind its baseline 70ms later, the
+ *    metric block 70ms after that, and once the title has landed the mark
+ *    parts from the tréma to its resting gap. Hover mode has no picture in
+ *    the row: the title leads; the plate opens once, from its left edge. ── */
+.item {
+  --title-lag: var(--stagger);
+}
+
+@media (min-width: 1280px) and (hover: hover) and (pointer: fine) {
+  :global(html.js) .item {
+    --title-lag: 0ms;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :global(html.js) [data-reveal-root] .item[data-reveal]:not(:global(.is-in)) {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* 120%: the line box plus the ascenders League Spartan sets above it */
+  :global(html.js) .item:not(:global(.is-in)) .titleLine {
+    transform: translate3d(0, 120%, 0);
+  }
+
+  :global(html.js) .item:not(:global(.is-in)) .meta {
+    opacity: 0;
+    transform: translate3d(0, var(--rise-ui), 0);
+  }
+
+  :global(html.js) .item:not(:global(.is-in)) .pic {
+    clip-path: inset(100% 0 0 0);
+  }
+
+  :global(html.js) .item:not(:global(.is-in)) .pic [data-stage-body] {
+    transform: scale(1.06);
+  }
+
+  :global(html.js) .item:not(:global(.is-in)) [data-mark-after] {
+    transform: translateX(calc(var(--d) * (1 + var(--trema-gap))));
+  }
+
+  :global(html.js) .item:not(:global(.is-in)) [data-mark-bar] {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  :global(html.js) .item:global(.is-revealing) .pic {
+    transition: clip-path var(--dur-rise) var(--ease-out);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  :global(html.js) .item:global(.is-revealing) .pic [data-stage-body] {
+    transition: transform var(--dur-settle) var(--ease-out);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  :global(html.js) .item:global(.is-revealing) .titleLine {
+    transition: transform var(--dur-rise) var(--ease-out);
+    transition-delay: calc(var(--reveal-delay, 0ms) + var(--title-lag));
+  }
+
+  :global(html.js) .item:global(.is-revealing) .meta {
+    transition:
+      opacity var(--dur-fade) var(--ease-out),
+      transform var(--dur-rise) var(--ease-out);
+    transition-delay: calc(var(--reveal-delay, 0ms) + var(--title-lag) + var(--stagger));
+  }
+
+  :global(html.js) .item:global(.is-revealing) [data-mark-after],
+  :global(html.js) .item:global(.is-revealing) [data-mark-bar] {
+    transition-property: transform, clip-path;
+    transition-duration: var(--dur-part);
+    transition-timing-function: var(--ease-in-out);
+    transition-delay: calc(var(--reveal-delay, 0ms) + var(--title-lag) + var(--dur-fade) * 0.6);
+  }
+
+  /* Keyboard focus never lands on a row that has not arrived: it shows at
+     once, with no entrance (01 §5.1). */
+  :global(html.js) .item:not(:global(.is-in)):focus-within .titleLine,
+  :global(html.js) .item:not(:global(.is-in)):focus-within .meta,
+  :global(html.js) .item:not(:global(.is-in)):focus-within .pic,
+  :global(html.js) .item:not(:global(.is-in)):focus-within .pic [data-stage-body] {
+    opacity: 1;
+    clip-path: none;
+    transform: none;
+    transition: none;
+  }
+
+  /* The band drops from the H2's cap line, at full ink (never a grey slab
+     fading on paper); then the plate opens from its left edge while what it
+     shows settles from 1.04 (the stage shutter). */
+  :global(html.js) [data-reveal-root] .band[data-reveal]:not(:global(.is-in)) {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0 0 100% 0);
+  }
+
+  :global(html.js) [data-reveal-root] .band[data-reveal]:global(.is-revealing) {
+    transition: clip-path var(--dur-settle) var(--ease-out);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  :global(html.js) [data-reveal-root] .plateReveal[data-reveal]:not(:global(.is-in)) {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0 100% 0 0);
+  }
+
+  :global(html.js) [data-reveal-root] .plateReveal[data-reveal]:not(:global(.is-in)) .slides {
+    transform: scale(1.04);
+  }
+
+  :global(html.js) [data-reveal-root] .plateReveal[data-reveal]:global(.is-revealing) {
+    transition: clip-path var(--dur-rise) var(--ease-out);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  :global(html.js) [data-reveal-root] .plateReveal[data-reveal]:global(.is-revealing) .slides {
+    transition: transform var(--dur-settle) var(--ease-out);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+}
+
+/* Reduced motion: every row as it rests, marks parted; the hover answers
+   with the parted mark only, and the plate's changes are cuts and fades. */
+@media (prefers-reduced-motion: reduce) {
+  .row [data-mark-after],
+  .row [data-mark-bar],
+  .plateShow {
+    transition: none;
+  }
+
+  .row:hover .cue,
+  .row:focus-visible .cue,
+  :global(html.js) .item[data-cue] .cue {
+    transform: none;
+  }
+}
+
+/* Print: every row as it rests, whether or not it ever scrolled into view. */
+@media print {
+  .titleLine,
+  .meta,
+  .pic,
+  .pic [data-stage-body] {
+    opacity: 1 !important;
+    clip-path: none !important;
+    transform: none !important;
+  }
+
+  .track,
+  .band {
+    display: none !important;
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "_note": "Written by .aaa/derived/cv/redact_cv.py. allowed: sha256 of the redacted CV in public/ (and so out/). forbidden: sha256 of unredacted sources (they print the phone number).",
+  "allowed": "44b2fa0da0891dcd0f4ea2f3308745cd04ddff794b1cf4b0e0679de246e99181",
+  "forbidden": [
+    "ddfdcc1ae41a91aae0bb55a00f983068888430e5d9340bcdefa1316cdcca08ee"
+  ]
+}

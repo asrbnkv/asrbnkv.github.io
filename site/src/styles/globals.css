@@ -1,0 +1,517 @@
+/*
+ * Global base for the Tréma system. Owned by the design-system agent.
+ * Section styles go in each section's CSS module, never here.
+ * Spec: .aaa/brief/design-spec/01-system.md (§2 fields, §5 motion, §9 browser surfaces).
+ */
+@import "./tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-synthesis: none;
+  font-kerning: normal;
+  font-variant-numeric: lining-nums proportional-nums;
+  scrollbar-color: var(--ink) var(--paper);
+  scroll-padding-top: calc(var(--bar) + 16px);
+  -webkit-tap-highlight-color: transparent;
+  background-color: var(--paper);
+}
+
+/* The page scrollbar takes the field under the bar (BarBehaviour writes
+   html[data-bar-field]), so a classic scrollbar never runs a paper stripe
+   beside an ink chapter. */
+html[data-bar-field="stone"] {
+  scrollbar-color: var(--ink) var(--stone);
+}
+
+html[data-bar-field="ink"] {
+  scrollbar-color: var(--paper) var(--ink);
+}
+
+html[data-bar-field="orange"] {
+  scrollbar-color: var(--ink) var(--orange);
+}
+
+/* A chapter jump (nav, menu, deep link, language switch) lands on the
+   field's top edge, so the bar takes that chapter's field at once; each
+   chapter's own top padding (≥ --section-gap) keeps its heading clear of the
+   bar. Other targets keep the root's scroll-padding (bar + 16px). The first
+   chapter (#top) stays at the page's top. */
+main > section[id][data-field]:not(#top) {
+  scroll-margin-top: calc(-1 * (var(--bar) + 16px));
+}
+
+/* No global scroll-behavior: smooth. Chrome applies it to focus navigation and to
+ * fragment loads too, so Tab glided the page and /#method landed near the top while
+ * scroll-pinned scenes changed the page height mid-glide (flagged by every motion
+ * critic, WF3 round 1). Keyboard-initiated scrolling must never animate. */
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: var(--step-0);
+  font-weight: var(--weight-body);
+  line-height: var(--leading-body);
+  caret-color: var(--caret);
+}
+
+/* ── Fields (§2.2): a chapter changes the whole field; edges are hard cuts. ── */
+[data-field] {
+  background-color: var(--field-bg);
+  color: var(--field-ink);
+  caret-color: var(--caret);
+}
+
+/* Light text on ink reads heavier: grayscale smoothing and +0.01em on body text. */
+[data-field="ink"] {
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Not in the bar or its menu: the bar's layout never moves (§6.7), so its
+   items keep one x on every field. */
+[data-field="ink"] :where(p, li, dd, figcaption, small, label):not(:where([data-bar] *)) {
+  letter-spacing: var(--tracking-ink-body);
+}
+
+/* The first-screen rule (01 §3.4, lib/fold.ts): the fold never cuts a block
+   of the home's first chapter. When a block cannot sit wholly above it (24px
+   clear, the pair's labels 48px), the script marks that child and it starts
+   below the fold with everything after it; the bar carries Email me. */
+html[data-fold="2"] #top > :nth-child(2),
+html[data-fold="3"] #top > :nth-child(3),
+html[data-fold="4"] #top > :nth-child(4),
+html[data-fold="5"] #top > :nth-child(5),
+html[data-fold="6"] #top > :nth-child(6),
+html[data-fold="7"] #top > :nth-child(7),
+html[data-fold="8"] #top > :nth-child(8) {
+  margin-top: var(--fold-mt);
+}
+
+/* The page body that lifts off the curtain footer (§7.15). */
+[data-curtain-main] {
+  position: relative;
+  z-index: var(--z-main);
+  background-color: var(--paper);
+}
+
+/* ── Reset ─────────────────────────────────────────────────────────────── */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+figure,
+blockquote,
+ul,
+ol,
+dl,
+dd {
+  margin: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+  font-weight: inherit;
+  font-size: inherit;
+  text-wrap: balance;
+  hyphens: none;
+}
+
+p,
+li,
+dd,
+blockquote,
+figcaption {
+  text-wrap: pretty;
+}
+
+/* French body paragraphs only; statements and headings opt out (type.module.css). */
+:where(:lang(fr)) :where(p) {
+  hyphens: auto;
+}
+
+blockquote {
+  hanging-punctuation: first;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+img,
+picture,
+video,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+}
+
+button {
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
+  border-radius: var(--radius);
+}
+
+strong,
+b {
+  font-weight: 600;
+}
+
+/* ── Links (§7.5): always underlined, currentColor at 40% → 100% on hover. ── */
+a {
+  color: inherit;
+  text-decoration-line: underline;
+  text-decoration-thickness: var(--underline-thickness);
+  text-underline-offset: var(--underline-offset);
+  text-decoration-color: currentColor;
+  text-decoration-color: color-mix(in srgb, currentColor var(--underline-rest), transparent);
+  transition:
+    text-decoration-color var(--dur-hover) var(--ease-hover),
+    opacity var(--dur-press) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  a:hover {
+    text-decoration-color: currentColor;
+  }
+}
+
+/* Press feedback for every link (the tap highlight is off): opacity 0.7 at
+   140ms. Primary buttons press by scale instead (Button.module.css). */
+a:active {
+  opacity: 0.7;
+}
+
+/* Keyboard focus snaps the underline to 100% with its ring (01 §5.1:
+   keyboard actions are not animated); only the press keeps its fade. */
+a:focus-visible {
+  text-decoration-color: currentColor;
+  transition: opacity var(--dur-press) var(--ease-out);
+}
+
+/* ── Browser surfaces (§9) ─────────────────────────────────────────────── */
+::selection {
+  background-color: var(--selection-bg);
+  color: var(--selection-ink);
+}
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: var(--focus-offset);
+}
+
+input,
+textarea,
+select {
+  accent-color: var(--ink);
+  border-radius: var(--radius);
+}
+
+/* Placeholders in the field's ink at --placeholder-alpha (tokens.css): 60% on
+   paper, stone and ink (≥4.66:1), 86% on orange (4.62:1). */
+::placeholder {
+  color: currentColor;
+  opacity: var(--placeholder-alpha, 0.6);
+}
+
+/* Numbers that align in a column: Figtree tabular figures (stat rows, keys). */
+.tabular {
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* ── Utilities shared by every section (keep this list short) ──────────── */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The same, kept inline-level: for words read inside a name or a sentence
+   (", version française", the footer's comma). An absolutely positioned
+   span is blockified, and accessible-name computation then wraps it in
+   spaces ("Serebryannikov , Product Owner"); this one stays in the line. */
+.visually-hidden-inline {
+  display: inline-block;
+  width: 1px;
+  height: 1px; /* visually hidden text, not a rule */
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+
+/* The bilingual 404: with JS, only the block matching html[data-lang] shows
+   (set before paint by the boot script); without JS both show, EN first. */
+html.js[data-lang="fr"] [data-nf="en"],
+html.js[data-lang="en"] [data-nf="fr"] {
+  display: none !important;
+}
+
+html:not(.js) .skip-link [data-nf] + [data-nf]::before {
+  content: " / ";
+}
+
+/* The skip link: first focusable element, visible on focus (§10). It drops
+   into the bar band over the wordmark slot (10px from the top, 44px tall),
+   so it never touches the monument's ink under the bar; its ring is the
+   page's focus colour like every other ring on paper. */
+.skip-link {
+  position: fixed;
+  top: calc((var(--bar) - var(--target-min)) / 2);
+  left: var(--margin);
+  z-index: var(--z-skip);
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target-min);
+  padding-inline: var(--space-s);
+  background-color: var(--ink);
+  color: var(--paper);
+  font-weight: var(--weight-ui);
+  font-size: var(--step--1);
+  text-decoration: none;
+  outline-color: var(--focus-color);
+  transform: translateY(calc(-100% - var(--bar)));
+}
+
+/* Appears in place at once: it only ever answers the keyboard (01 §5.1). */
+.skip-link:focus-visible {
+  transform: none;
+}
+
+/* ══ Motion grammar (§5) ═════════════════════════════════════════════════
+ * Content is visible without JS. Hidden states apply only under html.js (set
+ * by the boot script in <head>) and (prefers-reduced-motion: no-preference).
+ * If the motion layer never boots, the boot script removes html.js after 4s.
+ */
+
+/* Load beat (hero, case covers): [data-beat] elements rise once the display
+ * face is ready (html.fonts-ready, at most 700ms). Set the start with
+ * style={{ "--beat-delay": "160ms" }}. Put data-beat on a wrapper, never on a
+ * control (an animation would hold its transform). */
+@media (prefers-reduced-motion: no-preference) {
+  html.js:not(.fonts-ready) [data-beat] {
+    opacity: 0;
+  }
+
+  html.js.fonts-ready [data-beat] {
+    animation:
+      beat-fade var(--beat-fade, var(--dur-fade)) var(--ease-out) var(--beat-delay, 0ms) backwards,
+      beat-rise var(--beat-dur, var(--dur-rise)) var(--ease-out) var(--beat-delay, 0ms) backwards;
+  }
+
+  html.js.fonts-ready [data-beat="fade"] {
+    animation: beat-fade var(--beat-fade, var(--dur-fade)) var(--ease-out) var(--beat-delay, 0ms) backwards;
+  }
+
+  /* A later home view in the same session (lib/boot.ts): one 200ms opacity
+     step, no rise, no stagger. */
+  html.js.beat-seen.fonts-ready [data-beat],
+  html.js.beat-seen.fonts-ready [data-beat="fade"] {
+    animation: beat-fade 200ms var(--ease-out) backwards;
+  }
+}
+
+@keyframes beat-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes beat-rise {
+  from {
+    transform: translate3d(0, var(--beat-travel, var(--rise-hero)), 0);
+  }
+}
+
+/* Chapter entrances (<Reveal>): heading, text, picture rise 24px with opacity,
+ * 900ms transform / 700ms opacity, staggered 70ms, once. Variants by value:
+ * data-reveal="" (rise) | "fade" | "settle" (plates, from 0.94) | "ui" (8px). */
+@media (prefers-reduced-motion: no-preference) {
+  html.js [data-reveal-root] [data-reveal]:not(.is-in) {
+    opacity: 0;
+    transform: translate3d(0, var(--reveal-travel, var(--rise)), 0);
+  }
+
+  html.js [data-reveal-root] [data-reveal="fade"]:not(.is-in) {
+    transform: none;
+  }
+
+  html.js [data-reveal-root] [data-reveal="ui"]:not(.is-in) {
+    transform: translate3d(0, var(--rise-ui), 0);
+  }
+
+  html.js [data-reveal-root] [data-reveal="settle"]:not(.is-in) {
+    transform: scale(var(--settle-from));
+  }
+
+  /* Keyboard focus never lands on unrevealed content: a focused element (or one
+   * containing focus) shows at once, with no entrance. */
+  html.js [data-reveal-root] [data-reveal]:not(.is-in):focus,
+  html.js [data-reveal-root] [data-reveal]:not(.is-in):focus-within {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  html.js [data-reveal-root] [data-reveal].is-revealing {
+    transition:
+      opacity var(--dur-fade) var(--ease-out),
+      transform var(--dur-rise) var(--ease-out);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  html.js [data-reveal-root] [data-reveal="settle"].is-revealing {
+    transition:
+      opacity var(--dur-settle) var(--ease-out),
+      transform var(--dur-settle) var(--ease-out);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+}
+
+/* ══ Cross-document view transitions (§6.6) ══════════════════════════════
+ * Case links are plain <a> (full page loads between static pages), so the
+ * browser carries one mark's two dots (tr-<slug>-a / -b, class trema) into
+ * the case cover. The names exist only for the navigation in progress
+ * (lib/viewTransitions.ts): a home → case transition has three groups, root
+ * and the two dots. The pages never show at once: the old one leaves in
+ * 120ms, the new one arrives over 200ms from 80ms (40ms of overlap). */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
+
+::view-transition-group(*.trema) {
+  animation-duration: 420ms;
+  animation-timing-function: var(--ease-in-out);
+}
+
+::view-transition-old(root) {
+  animation-duration: 120ms;
+  animation-timing-function: var(--ease-out);
+}
+
+::view-transition-new(root) {
+  animation-duration: 200ms;
+  animation-delay: 80ms;
+  animation-fill-mode: both;
+  animation-timing-function: var(--ease-out);
+}
+
+/* A carried pair that finds no landing on the new page leaves with the old
+   page instead of hanging over it. */
+html[data-vt-orphan]::view-transition-group(*.trema) {
+  animation-duration: 120ms;
+  animation-timing-function: var(--ease-out);
+}
+
+/* ══ Print (§9) ══════════════════════════════════════════════════════════ */
+@media print {
+  [data-print="hide"],
+  [data-flight] {
+    display: none !important;
+  }
+
+  [data-field],
+  [data-curtain-main],
+  html,
+  body {
+    background: #fff !important;
+    color: var(--ink) !important;
+  }
+
+  [data-field] * {
+    color: var(--ink) !important;
+  }
+
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: var(--step--1);
+  }
+
+  [data-reveal],
+  [data-beat] {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+
+  footer {
+    position: static !important;
+  }
+}
+
+/* ══ Reduced motion (§5.4): content stays, travel goes. JS motion checks
+ * prefersReducedMotion() itself before it is created.
+ * Keyframe animations here are travel (rises, drops, partings, draws), so
+ * they are clamped. Transitions keep only opacity and colour: transforms,
+ * clip-paths and filters change at once, while the bar's colour, underline
+ * fades and short opacity fades still run (each ≤ 240ms). Visibility is not
+ * transitioned (a descendant of a panel hidden by visibility would stay
+ * visible for its own duration); only a popover keeps discrete visibility/
+ * display/overlay, so a closing menu keeps its fade. ═════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-property:
+      opacity, color, background-color, border-color, outline-color, text-decoration-color, fill,
+      stroke !important;
+  }
+
+  [popover],
+  [popover]::backdrop {
+    transition-property:
+      opacity, color, background-color, border-color, outline-color, text-decoration-color, fill,
+      stroke, visibility, display, overlay !important;
+    transition-behavior: allow-discrete !important;
+  }
+}

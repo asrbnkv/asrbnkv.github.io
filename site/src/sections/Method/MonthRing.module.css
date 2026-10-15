@@ -1,0 +1,266 @@
+/*
+ * The month in dots, drawn as the loop (02 §6.1–6.4, 01 §7.11; ring.ts holds
+ * the geometry). The chapter sets --R (the centre line's radius), --cy (the
+ * centre's distance from the drawing's top), --label-band (room for a row of
+ * labels above and below the ring; 0 on phones, where the key replaces the
+ * labels) and --label-size. Every length below is a multiple of --R, so the
+ * drawing keeps its proportions from 390 to 1920. MonthRing.tsx sets the dot
+ * sizes in R (--s*-l from 600px, --s*-s on phones):
+ *
+ *   --d  a day (one call with engineering)   0.07 R    (21px at 1440×900)
+ *   --p  sprint planning                      0.19 R    (57px)
+ *   --v  the product review                   0.33 R    (98px; 40px on a phone)
+ *
+ * All ink: the month has no before or after.
+ */
+.month {
+  --d: calc(var(--R) * var(--sc-s));
+  --p: calc(var(--R) * var(--sp-s));
+  --v: calc(var(--R) * var(--sv-s));
+  position: relative;
+  margin: 0;
+}
+
+@media (min-width: 600px) {
+  .month {
+    --d: calc(var(--R) * var(--sc-l));
+    --p: calc(var(--R) * var(--sp-l));
+    --v: calc(var(--R) * var(--sv-l));
+  }
+}
+
+/* The drawing's box: the ring's ink plus a label band above and below. */
+.score {
+  position: relative;
+  height: calc(var(--R) * (var(--ink-top) + var(--ink-bottom)) + 2 * var(--label-band));
+}
+
+.call {
+  --size: var(--d);
+}
+
+.planning {
+  --size: var(--p);
+}
+
+.review {
+  --size: var(--v);
+}
+
+/* Placed by left/top and centred with `translate`, so `transform` stays
+   free for the entrance, the pointer and the closing beat. */
+.dot {
+  position: absolute;
+  left: calc(50% + var(--x) * var(--R));
+  top: calc(var(--cy) + var(--y) * var(--R));
+  width: var(--size);
+  height: var(--size);
+  translate: -50% -50%;
+  border-radius: 50%;
+  background-color: var(--field-ink);
+  print-color-adjust: exact;
+}
+
+/* ── Labels (≥ 600): attached to their dots, value (FT 600) over
+   description (FT 400), in full ink. A top dot carries its label above
+   the ring, a bottom dot below it; a left-half label ends on its dot's
+   right edge, a right-half label starts on its dot's left edge. ── */
+.labels {
+  position: absolute;
+  inset: 0;
+  font-size: var(--label-size);
+  color: var(--field-ink);
+  pointer-events: none;
+}
+
+.label {
+  position: absolute;
+  display: block;
+  width: max-content;
+}
+
+.label[data-row="top"] {
+  top: 0;
+}
+
+.label[data-row="bottom"] {
+  bottom: 0;
+}
+
+.label[data-align="start"] {
+  left: calc(50% + var(--ax) * var(--R));
+  text-align: start;
+}
+
+.label[data-align="end"] {
+  right: calc(50% - var(--ax) * var(--R));
+  text-align: end;
+}
+
+.value {
+  display: block;
+  font-weight: var(--weight-ui);
+}
+
+.text {
+  display: block;
+}
+
+/* ── The key (< 600): one line per kind, its swatch at the drawing's own
+   size, its count in tabular figures. Every row is at least as tall as the
+   largest swatch, so the three lines keep one rhythm. ── */
+.key {
+  display: none;
+  margin: var(--space-m) 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--field-ink);
+}
+
+.keyRow {
+  display: grid;
+  grid-template-columns: var(--v) minmax(0, 1fr);
+  column-gap: var(--space-s);
+  align-items: center;
+  min-height: var(--v);
+}
+
+.swatchCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.swatch {
+  display: block;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background-color: var(--field-ink);
+  print-color-adjust: exact;
+}
+
+.keyText {
+  text-wrap: pretty;
+}
+
+.count {
+  font-weight: var(--weight-ui);
+}
+
+/* "20 dots: a call with engineering…" (French sets its no-break space). */
+.count::after {
+  content: ":";
+}
+
+.count:lang(fr)::after {
+  content: "\a0:";
+}
+
+/* The caption: under the key on phones; from 600 inside the ring, hung
+   under the heading on the heading's left edge (the chapter sets --lock,
+   the heading's measure, and --f, its size). */
+.caption {
+  margin-top: var(--space-s);
+  text-wrap: pretty;
+}
+
+@media (max-width: 599px) {
+  .labels {
+    display: none;
+  }
+
+  .key {
+    display: grid;
+    row-gap: var(--space-2xs);
+  }
+}
+
+@media (min-width: 600px) {
+  .caption {
+    position: absolute;
+    left: calc(50% - var(--lock) / 2);
+    top: calc(var(--cy) + var(--f) * 0.95 + var(--space-m));
+    width: calc(var(--lock) * 0.8);
+    margin: 0;
+  }
+}
+
+/* The dots are the drawing: keep them in the system's text colour when the
+   user forces colours, and on paper when printed. */
+@media (forced-colors: active) {
+  .dot,
+  .swatch {
+    forced-color-adjust: none;
+    background-color: CanvasText;
+  }
+}
+
+@media print {
+  .month :is(.dot, .label, .keyRow, .caption) {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ══ Motion (02 §6.4). Hidden states exist only under html.js and
+   no-preference: without JS and under reduced motion the month is drawn.
+   Until the chapter lights it (MethodRoot.tsx: once its heading has risen
+   and most of the ring is in view), the month waits unlit: the days are
+   drawn at 12% ink, so the ring is never blank, and the review is not
+   there yet. data-played lights it (with --month-delay); data-settled
+   follows once the review has landed. Each element carries its own delay
+   in --t (ring.ts): days 18ms apart with a 70ms rest at each weekend,
+   clockwise from 12, then the review drops in last and closes the loop;
+   each label fades in as its dot lands. ══ */
+@media (prefers-reduced-motion: no-preference) {
+  :global(html.js) .month:not([data-played]) .dot {
+    opacity: 0.12;
+    transform: translate3d(0, var(--rise-dot), 0);
+  }
+
+  /* The review drops in from above, last, like the ë's dots. */
+  :global(html.js) .month:not([data-played]) .dot.review {
+    opacity: 0;
+    transform: translate3d(0, calc(var(--v) * -0.5), 0);
+  }
+
+  :global(html.js) .month:not([data-played]) :is(.label, .keyRow, .caption) {
+    opacity: 0;
+  }
+
+  .month[data-played]:not([data-settled]) .dot {
+    transition:
+      opacity 520ms var(--ease-out),
+      transform 520ms var(--ease-out);
+    transition-delay: calc(var(--month-delay, 0ms) + var(--t));
+  }
+
+  .month[data-played]:not([data-settled]) .dot.review {
+    transition-duration: var(--dur-drop);
+  }
+
+  .month[data-played]:not([data-settled]) :is(.label, .keyRow) {
+    transition: opacity 200ms var(--ease-out);
+    transition-delay: calc(var(--month-delay, 0ms) + var(--t));
+  }
+
+  .month[data-played]:not([data-settled]) .caption {
+    transition: opacity var(--dur-ui) var(--ease-out);
+    transition-delay: calc(var(--month-delay, 0ms) + var(--caption-t));
+  }
+}
+
+/* The pointer (useNearLift.ts): once the month has settled, the days within
+   about 60px of a mouse lift 4px (160ms out) and settle when it moves on
+   (240ms). Local and immediate; nothing plays on its own. */
+@media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
+  .month[data-settled] .dot {
+    transition: transform 240ms var(--ease-out);
+  }
+
+  .month[data-settled] .dot[data-near] {
+    transform: translate3d(0, -4px, 0);
+    transition-duration: 160ms;
+  }
+}

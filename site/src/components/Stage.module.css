@@ -1,0 +1,128 @@
+/*
+ * The screen stage (01-system.md §8.1): every screen is lit on ink. On light
+ * chapters the stage is a full-bleed ink band with hard cuts top and bottom.
+ * Square corners and nothing drawn around the screen. One grade, fixed crops.
+ */
+.stage {
+  position: relative;
+  padding-block: var(--space-3xl);
+  padding-inline: var(--margin);
+}
+
+.plate {
+  margin: 0;
+  width: 100%;
+}
+
+.plate img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+}
+
+/* A real interface fragment keeps its own radius at its displayed size. */
+.xs {
+  max-width: 146px;
+}
+
+.xs img {
+  border-radius: var(--radius-ui);
+}
+
+.caption {
+  margin-top: var(--space-2xs);
+  font-family: var(--font-text);
+  font-size: var(--step--1);
+  line-height: var(--leading-small);
+  color: var(--muted-on-ink);
+  max-width: 62ch;
+  /* no short last line in a narrow phone plate ("its slot") */
+  text-wrap: pretty;
+}
+
+/* L plates scale 0.92 → 1 with the reader's scroll (entry 0% → cover 35%),
+   the screen only (scale, no opacity: the caption keeps its contrast). The
+   bottom edge stays put, so the caption's gap never changes; an L plate
+   keeps its start edge on the grid (origin 0 100%), an L-wide plate its
+   centre (50% 100%). A composition may set --stage-origin. */
+.lWide {
+  --stage-origin: 50% 100%;
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .l img,
+    .lWide img {
+      transform-origin: var(--stage-origin, 0 100%);
+      animation: stage-scale linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 35%;
+    }
+  }
+}
+
+@keyframes stage-scale {
+  from {
+    transform: scale(var(--stage-from));
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* ── The moving picture (§8.2): a 1:1 window panned by the scroll. ── */
+.pan {
+  margin: 0;
+  width: 100%;
+}
+
+.window {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  view-timeline: --pan block;
+  /* the sticky bar covers the top of the viewport: the walk ends when the
+     window's top meets it, not the screen's edge */
+  view-timeline-inset: calc(var(--bar) + 16px) 0px;
+  transform-origin: 50% 0;
+}
+
+/* The settle is the window's (scale from 0.94, top edge fixed); the figure
+   with its caption only fades (data-reveal="fade"), so the caption never
+   scales. Only inside a Reveal root, which releases it. */
+@media (prefers-reduced-motion: no-preference) {
+  :global(html.js [data-reveal-root]) .pan:not(:global(.is-in)) .window {
+    transform: scale(var(--settle-from));
+  }
+
+  .pan:global(.is-revealing) .window {
+    transition: transform var(--dur-settle) var(--ease-out) var(--reveal-delay, 0ms);
+  }
+}
+
+.window img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .window img {
+      animation: pan linear both;
+      animation-timeline: var(--pan-timeline, --pan);
+      animation-range: entry 75% exit 0%;
+    }
+  }
+}
+
+@keyframes pan {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    /* image height minus window height, as a share of the image's own height */
+    transform: translateY(calc((var(--pan-ratio) - 1) * 100%));
+  }
+}

@@ -1,0 +1,219 @@
+/*
+ * The monument "Artëm" (01-system.md §3.4, §6.1, §6.5; 03 §11).
+ * League Spartan 800, −0.04em, leading 0.8. Geometry measured from the
+ * shipping font in Chromium (scratch measure, 2026-10-15): ascent 0.70em,
+ * descent 0.22em; the real ë's dots: centres 0.1575em and 0.361em from the
+ * e's origin, 0.557em above the baseline, diameter 0.161em, gap 0.043em.
+ */
+.frame {
+  display: block;
+  width: 100%;
+  container-type: inline-size;
+}
+
+/* The size with the opened joins (below): the word's ink right edge sits at
+   2.7139em, so the divisor 2.6639 keeps the m's 0.05em crop at the right
+   edge (26.5px at 1440, 35.5px at 1920, 7px at 390). The footer sets the
+   same size locally; tokens.css follows next round (steward). */
+.frame:not(.fallen) {
+  --step-monument: max(4.5rem, calc((100cqi - var(--margin)) / 2.6639));
+}
+
+.line {
+  position: relative;
+  display: block;
+  padding-left: var(--margin);
+  font-family: var(--font-display);
+  font-weight: var(--weight-giant);
+  font-size: var(--step-monument);
+  line-height: var(--leading-giant);
+  letter-spacing: var(--tracking-giant);
+  white-space: nowrap;
+  font-kerning: normal;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Letters are inline-blocks so they can rise; inline-blocks lose the one
+   kerning pair of the word (r–t, +0.0145em), restored in the r's margin.
+   At −0.04em the A's foot met the r's stem and the r's arm ran into the t's
+   bar, so "Art" read as one shape. Measured on the shipping face at
+   360–1920px (pixel scan per letter): the A opens to 0.025em and the r to
+   0.055em (the kerning pair included), which leaves at least 0.014em of
+   paper along both joins: 7.5px at 1440, 10.5px at 1920, 2px at 390. The
+   404's fallen word keeps its own measured setting. */
+.letter {
+  display: inline-block;
+}
+
+.a {
+  margin-right: 0.025em;
+}
+
+.r {
+  margin-right: 0.055em;
+}
+
+.fallen .a {
+  margin-right: 0.012em;
+}
+
+.fallen .r {
+  margin-right: calc(0.0145em + 0.012em);
+}
+
+/* line-height 0.48 puts the e box's bottom exactly on the baseline
+   (0.8 leading: half-leading −0.06em; 0.48: the descent is cancelled). */
+.e {
+  position: relative;
+  line-height: 0.48;
+}
+
+/* The dots are zero-advance inline-blocks after the e's glyph (an absolutely
+   positioned box would split the word for innerText: "Arte / m"). Their
+   static place is the e's advance at −0.04em (0.4665em, measured) on the
+   baseline; relative offsets carry them to the measured ë (centres 0.1575em
+   and 0.361em from the e's origin, 0.557em above the baseline). */
+.dot {
+  position: relative;
+  display: inline-block;
+  vertical-align: baseline;
+  width: 0.161em;
+  height: 0.161em;
+  margin-right: -0.161em;
+  top: calc(-1 * (0.557em - 0.0805em));
+  border-radius: 50%;
+  letter-spacing: 0;
+  background-color: var(--monument-dot, currentColor);
+}
+
+.dotL {
+  left: calc(0.1575em - 0.0805em - 0.4665em);
+}
+
+.dotR {
+  left: calc(0.361em - 0.0805em - 0.4665em);
+}
+
+/* The footer: paper letters on ink, orange dots that come home (§6.5).
+   "Artëm" has no descender: the frame ends on the baseline (the 0.8
+   leading leaves 0.16em under it), so the footer's gap to its row is
+   measured from the m's foot. */
+.footer {
+  --monument-dot: var(--orange);
+}
+
+.footer .line {
+  margin-bottom: -0.16em;
+}
+
+/* The 404: "Artem" with both dots fallen on the baseline after the m, no
+   bleed (03 §11). The first dot starts 0.08em past the m's ink right edge. */
+.fallen .line {
+  font-size: var(
+    --fallen-size,
+    max(3.5rem, min(calc((100cqi - 2 * var(--margin)) / 3.125), calc((100svh - var(--bar) - 22rem) / 0.8)))
+  );
+}
+
+.fallenDot {
+  position: absolute;
+  bottom: 0.16em; /* the baseline: 0.8 leading leaves 0.16em under it */
+  width: 0.161em;
+  height: 0.161em;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+.fallenDotL {
+  left: calc(var(--margin) + 2.6719em + 0.08em);
+}
+
+.fallenDotR {
+  left: calc(var(--margin) + 2.6719em + 0.08em + 0.161em + 0.043em);
+}
+
+/* ── Load beat (§6.1): "ARTEM becomes Artëm". Each letter rises out of a
+   mask at the baseline (0.9em, 900ms out, 30ms apart) at full ink: no
+   opacity, so where the opened joins overlap two half-transparent glyphs
+   never compound into a darker wedge. The mask is the line's own clip:
+   open above and at the sides (the dots' drop, the m's bleed), closed
+   0.03em under the baseline (the round letters' overshoot). Then the dots
+   drop in from −0.5em, left then right, solid: they wait above the field's
+   top edge (the hero's overflow clip is their mask, as the baseline is the
+   letters'), so each falls out from under the bar line. The letters rise
+   from the floor, the dots fall from the ceiling. ── */
+@media (prefers-reduced-motion: no-preference) {
+  :global(html.js) .beat .line {
+    clip-path: inset(-1em -1em 0.13em -1em);
+  }
+
+  :global(html.js:not(.fonts-ready)) .beat .letter,
+  :global(html.js:not(.fonts-ready)) .beat .dot {
+    opacity: 0;
+  }
+
+  :global(html.js.fonts-ready) .beat .letter {
+    animation: monument-rise var(--dur-rise) var(--ease-out) var(--letter-delay, 0ms) backwards;
+  }
+
+  :global(html.js.fonts-ready) .beat .dot {
+    animation: drop var(--dur-drop) var(--ease-out) var(--drop-delay, 620ms) backwards;
+  }
+
+  /* A later home view in the same tab session (html.beat-seen, lib/boot.ts):
+     the word at rest, arriving as one 200ms opacity step. */
+  :global(html.js.beat-seen.fonts-ready) .beat .letter,
+  :global(html.js.beat-seen.fonts-ready) .beat .dot {
+    animation: monument-fade 200ms var(--ease-out) backwards;
+  }
+
+  /* Played once: never again in this view (Flight.tsx sets html.beat-done
+     when the beat has finished, so switching reduced motion off later does
+     not replay it). */
+  :global(html.js.beat-done) .beat .letter,
+  :global(html.js.beat-done) .beat .dot {
+    animation: none;
+  }
+
+  /* Homecoming (§6.5): the footer's orange dots drop in when 35% visible. */
+  :global(html.js) .footer:not([data-home]) .dot {
+    opacity: 0;
+    transform: translate3d(0, -0.5em, 0);
+  }
+
+  .footer[data-home] .dot {
+    transition:
+      opacity 180ms var(--ease-out),
+      transform var(--dur-drop) var(--ease-out);
+  }
+
+  .footer[data-home] .dotR {
+    transition-delay: var(--stagger-dots);
+  }
+}
+
+@keyframes monument-rise {
+  from {
+    transform: translate3d(0, 0.9em, 0);
+  }
+}
+
+@keyframes monument-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The dots ride inside the e while it rises: unseen until their own drop
+   starts, then solid at once (still above the field's edge), falling in. */
+@keyframes drop {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -0.5em, 0);
+  }
+
+  0.5% {
+    opacity: 1;
+  }
+}

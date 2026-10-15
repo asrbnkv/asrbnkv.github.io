@@ -1,0 +1,260 @@
+/*
+ * The work index's stage (01 §8.1, 02 §4.3–4.5): a 16:10 ink room, the same
+ * for the hover plate and the inline rows. Ink roles are set here, not with
+ * data-field, so the bar never takes the colour of a picture passing under
+ * it. Sizes follow the stage's own width (container units), so one
+ * composition serves 311px (1024 inline) to 517px (the 1440 plate).
+ */
+
+.stage {
+  --field-ink: var(--paper);
+  --field-muted: var(--muted-on-ink);
+  --field-before: var(--band);
+  --field-after: var(--orange);
+  --pad: 3.2cqi;
+  /* the caption band: 12px, one Small line, 12px */
+  --pad-b: var(--pad);
+  container: stage / inline-size;
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: clip;
+  background-color: var(--ink);
+  color: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.stage[data-captioned] {
+  --pad-b: calc(2 * var(--space-xs) + var(--step--1) * var(--leading-small));
+}
+
+.body {
+  position: absolute;
+  inset: var(--pad) var(--pad) var(--pad-b);
+  transform-origin: 50% 50%;
+}
+
+/* What the screen shows, one Small line inside the stage's bottom edge. */
+.caption {
+  position: absolute;
+  right: var(--space-xs);
+  bottom: var(--space-xs);
+  left: var(--space-xs);
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--font-text);
+  font-size: var(--step--1);
+  line-height: var(--leading-small);
+  letter-spacing: var(--tracking-ink-body);
+  color: var(--muted-on-ink);
+  white-space: nowrap;
+}
+
+/* A screen: contained and centred in the room, at native size at most. */
+.screen {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  margin: auto;
+}
+
+/* ── AppBazar: the phone screen as tall as the room allows (146×312
+ *    native, its own 14px corners), and the DAU pair it moved beside it. ── */
+.phoneRow {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: 7cqi;
+  padding-inline: 3cqi 4cqi;
+}
+
+.phone {
+  position: static;
+  flex: none;
+  width: auto;
+  height: 100%;
+  max-height: 312px;
+  margin: 0;
+  border-radius: calc(14 / 146 * 100%) / calc(14 / 312 * 100%);
+}
+
+.pair {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* A narrow plate (1280–1350px windows) keeps the pair's values (×1, ×2):
+   their words would run into each other, and the legend still names them. */
+@container stage (max-width: 459px) {
+  .pair [data-pair-label] > :last-child:not(:first-child) {
+    display: none;
+  }
+}
+
+/* ── Drawings: one centred group, their words under what they label. ── */
+.drawing {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Havaianas: the sum set at the statement step (03 §7.1), one term per
+ * line, and what the model gives under it: one dot per output, the orange
+ * one the output that moved the 2×. A small stage keeps that one only. */
+.sumDrawing {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  justify-content: center;
+}
+
+.sum {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--step-1);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-statement);
+  white-space: nowrap;
+}
+
+.sumLine {
+  display: grid;
+  grid-template-columns: 0.72em auto;
+}
+
+.sumOp {
+  color: var(--muted-on-ink);
+}
+
+.sumTotal {
+  margin-top: 0.3em;
+}
+
+.outputs {
+  display: grid;
+  row-gap: var(--space-3xs);
+  margin: var(--space-s) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* the dots hang in the operators' column, so the words share the terms' edge */
+.output {
+  display: grid;
+  grid-template-columns: calc(var(--step-1) * 0.72) minmax(0, 1fr);
+  align-items: baseline;
+  max-width: 34ch;
+  font-family: var(--font-text);
+  font-size: var(--step--1);
+  line-height: var(--leading-small);
+  letter-spacing: var(--tracking-ink-body);
+  color: var(--paper);
+}
+
+.outDot {
+  display: block;
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 50%;
+  background-color: var(--band);
+}
+
+.outputAfter .outDot {
+  background-color: var(--orange);
+}
+
+@container stage (max-width: 419px) {
+  .output:not(.outputAfter) {
+    display: none;
+  }
+}
+
+/* A row's own picture sits right above its title: there, a drawing's words
+   lead it (a field's name over its dots) and the sum is its four terms, so
+   no small line rides on the title (02 §4.5, amended). */
+.stage[data-variant="inline"] .outputs {
+  display: none;
+}
+
+.stage[data-variant="inline"] .field {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.stage[data-variant="inline"] .field figcaption {
+  margin: 0 0 var(--space-xs);
+}
+
+/* ── Dot fields: one dot, one unit (01 §7.9); gap = d, 10 per row. ── */
+.fields {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: calc(var(--rd) * 4.4);
+}
+
+/* each field's words wrap under it, never wider than its dots */
+.fields .field {
+  width: min-content;
+}
+
+.field figcaption {
+  letter-spacing: var(--tracking-ink-body);
+  text-wrap: balance;
+}
+
+.stage[data-kind="accounts"] {
+  --ad: clamp(6px, 2.7cqi, 14px);
+}
+
+.stage[data-kind="retention"] {
+  --rd: clamp(4px, 2.1cqi, 11px);
+}
+
+.stage[data-kind="accounts"] [data-dot-field] {
+  --d: var(--ad);
+}
+
+.stage[data-kind="retention"] [data-dot-field] {
+  --d: var(--rd);
+}
+
+/* The 60–70 range the management expected: the ten dots past 60 at 70%,
+   2.6:1 on ink, apart from the solid band grey (3.8:1) and readable. */
+.expected [data-dot-field] > :nth-child(n + 61):nth-child(-n + 70) {
+  opacity: 0.7;
+}
+
+/* A row's own AppBazar picture: "×1 ●—● ×2" at the statement step. */
+.typeset {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--step-1);
+  line-height: var(--leading-statement);
+  letter-spacing: var(--tracking-statement);
+  white-space: nowrap;
+}
+
+/* The row's figure in the plate's bottom edge: the value in paper, its words muted. */
+.captionValue {
+  font-weight: var(--weight-ui);
+  color: var(--paper);
+}

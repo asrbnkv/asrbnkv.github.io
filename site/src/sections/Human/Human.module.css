@@ -1,0 +1,511 @@
+/*
+ * `human` (ink): "7h 56m in the dark" (02-home.md §9). Token values only.
+ *
+ * The idea: the page is the app, enlarged. The headline is the planner's own
+ * counter and the day drawn under it is the planner's own rhythm bar at the
+ * page's scale. The reader's scroll walks the real day plan through its
+ * window (the chapter's one scroll-linked move) until the screen locks into
+ * the page: its counter numerals on the H2's baseline, its rhythm bar on the
+ * drawn day's line. The lock is also the still (no scroll timeline, reduced
+ * motion). Below, c_alt re-tallies the same day once a film is skipped.
+ *
+ * Measured (Chromium; League Spartan, Figtree; c_day is 1154×1686 px):
+ *   - the H2's baseline sits 0.709em under its line box's top (leading
+ *     0.95), so 0.241em above its bottom; the body's cap line 0.417em under
+ *     its line box's top (1.55).
+ *   - c_day rows: the tab rule 441–442; the counter numerals 478–511, their
+ *     baseline at 511.5; the rhythm bar 596–621 (x 36–1107, 08:45–22:50);
+ *     the last screening (Fatherland) 1455–1579.
+ *   - The lock shows rows 452–1606: neither edge cuts a line or shows the
+ *     tab rule. There, in shares of the window's width W, the counter's
+ *     baseline sits 0.05156 W under the window's top and the rhythm bar
+ *     0.12478 W under it, 0.02253 W tall.
+ *   So with the window's top at 0.709em − 0.05156 W (the counter on the
+ *   baseline), the screen's bar is centred 0.084485 W under the baseline,
+ *   and the drawn day is that bar enlarged to the text column about the
+ *   same centre line: one line with the screen's own bar.
+ *
+ * Composition (02 §9.1–9.2; amendments marked A):
+ *   phone  H2, statement, the window full width, then c_alt and c_film side
+ *          by side on 2 + 2 columns (the film 48px lower), the note, the
+ *          case link. The day in words only (A: drawn, it would repeat the
+ *          window's own bar at the same width).
+ *   600    H2, the drawn day and the statement across (A: the H2 holds one
+ *          line, which 4 columns cannot); the note and the link on 1–4
+ *          beside the window on 5–8, its top on the note's cap line; c_alt
+ *          on 1–4, 64px under the link; c_film on 5–8, 96px lower than c_alt
+ *          or 48px under the window's caption, whichever is lower.
+ *   1024   text on 1–7 (A: the drawn day under the H2, the statement 48px
+ *          under it), the window on 8–12 with the lock; c_alt on 2–5, 96px
+ *          under the text column; c_film on 8–11, 64px lower (155px at 1279)
+ *          or 88px under the window's caption.
+ *   1280+  c_alt 128px under the text column (A: beside the window, so the
+ *          first screen is full); c_film 160px lower at 1280, 192px at 1440
+ *          (02 §9.1), 288px at 1920, or 88px under the window's caption.
+ *   The offsets keep every free band beside the screens under 200px
+ *   (measured 1024–1920, EN and FR).
+ *
+ * "Whichever is lower" is one grid line, so it holds in both languages: the
+ * window spans the text rows and a band row, and the band holds a spacer at
+ * least as tall as c_alt's drop plus c_film's offset, and as the window's
+ * overhang below a lower-bound text column (so the window never pushes the
+ * text rows apart). c_alt runs on into the last row, a 1fr track, which
+ * takes all of its overhang.
+ */
+.root {
+  /* The section is its own inline-size container: --win (the window's
+     width) in cqi, so the drawn day, the band and the window agree. */
+  container-type: inline-size;
+  --col: calc((100cqi - (var(--columns) - 1) * var(--gutter)) / var(--columns));
+  --win: 100cqi;
+  --bar-h: 16px;
+  display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  align-items: start;
+  column-gap: var(--gutter);
+  padding-block: var(--section-gap);
+  padding-inline: var(--margin);
+}
+
+/* ── Phone: one column; the two screens side by side ───────────────────── */
+.title {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  /* the 7's left side bearing: its bar meets the text edge */
+  margin-inline-start: -0.042em;
+}
+
+/* The phone keeps the day in words only (its drawing would repeat the
+   window's own bar at the same width). */
+.day {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+.films {
+  display: none;
+}
+
+.statement {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  margin-top: var(--space-m);
+}
+
+/* Scoped under .root: the stage's own `margin: 0` must not win. */
+.root .pan {
+  grid-column: 1 / -1;
+  grid-row: 4;
+  margin-top: var(--space-xl);
+}
+
+/* The still and the lock: rows 452–1606 of the plan (452 / 1686). */
+.root .pan img {
+  transform: translateY(-26.809%);
+}
+
+/* The two screens: one reveal part, so they settle as one batch. */
+.plates {
+  grid-column: 1 / -1;
+  grid-row: 5;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: start;
+  margin-top: var(--space-xl);
+}
+
+.root .alt {
+  grid-column: 1 / span 2;
+}
+
+.root .film {
+  grid-column: 3 / span 2;
+  margin-top: var(--space-xl);
+}
+
+/* Captions (Small, muted on ink; Stage): on the phone's narrow plates they
+   keep the stage's pretty wrap (full first lines); from 600 up, balanced. */
+
+/* Off the clock: body size and full ink. The chapter has one statement. */
+.note {
+  grid-column: 1 / -1;
+  grid-row: 6;
+  max-width: 30em;
+  margin-top: var(--space-xl);
+}
+
+.case {
+  grid-column: 1 / -1;
+  grid-row: 7;
+  margin-top: var(--space-xs);
+}
+
+/* ── The drawn day: lit bars on the dark, each film named under its bar
+   with its length (Small, under what it labels). The fourth film's labels
+   end on the day's end. ────────────────────────────────────────────────── */
+.films {
+  position: relative;
+  height: calc(var(--bar-h) + var(--space-2xs) + 2 * var(--step--1) * var(--leading-small));
+}
+
+.slot {
+  position: absolute;
+  top: 0;
+  left: calc(var(--x) * 100%);
+  width: calc(var(--w) * 100%);
+}
+
+.slot[data-last] {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.bar {
+  display: block;
+  align-self: stretch;
+  height: var(--bar-h);
+  background: var(--field-ink);
+  /* At rest the clip is the bar itself, so the opening interpolates. */
+  clip-path: inset(0);
+}
+
+.name,
+.length {
+  display: block;
+  white-space: nowrap;
+}
+
+.name {
+  margin-top: var(--space-2xs);
+}
+
+/* ── 600–1023: H2, the day and the statement across, then the note beside
+   the window. Rows: H2 · day · statement · note · link · band · rest (1fr). */
+@media (min-width: 600px) {
+  .root {
+    --win: calc(4 * var(--col) + 3 * var(--gutter));
+    grid-template-rows: repeat(6, auto) 1fr;
+  }
+
+  .root figcaption {
+    text-wrap: balance;
+  }
+
+  .day {
+    margin-top: var(--space-s);
+  }
+
+  .films {
+    display: block;
+  }
+
+  .statement {
+    margin-top: var(--space-xl);
+  }
+
+  .note {
+    grid-column: 1 / span 4;
+    grid-row: 4;
+  }
+
+  .case {
+    grid-column: 1 / span 4;
+    grid-row: 5;
+  }
+
+  /* Its top on the note's cap line; it spans the note, the link and the
+     band, and keeps 48px clear above c_film. */
+  .root .pan {
+    grid-column: 5 / span 4;
+    grid-row: 4 / span 3;
+    margin-top: calc(var(--space-xl) + 0.417 * var(--step-0));
+    margin-bottom: var(--space-xl);
+  }
+
+  .plates {
+    grid-row: 6 / span 2;
+    grid-template-rows: subgrid;
+    margin-top: 0;
+  }
+
+  /* The band: at least c_alt's drop plus c_film's offset (64 + 96), and at
+     least the window's overhang under the note and the link, counted with
+     two note lines and a two-line caption: W + 0.417·s0 + 147.5px −
+     (60px + 4.65·s0). */
+  .plates::before {
+    content: "";
+    grid-column: 1;
+    grid-row: 1;
+    padding-top: max(
+      calc(var(--space-2xl) + var(--space-3xl)),
+      calc(var(--win) - 4.233 * var(--step-0) + 87.5px)
+    );
+  }
+
+  .root .alt {
+    grid-column: 1 / span 4;
+    grid-row: 1 / span 2;
+    margin-top: var(--space-2xl);
+  }
+
+  .root .film {
+    grid-column: 5 / span 4;
+    grid-row: 2;
+    margin-top: 0;
+  }
+}
+
+/* ── 1024+: the text column on 1–7 beside the window on 8–12 ───────────── */
+@media (min-width: 1024px) {
+  .root {
+    --win: calc(5 * var(--col) + 4 * var(--gutter));
+    --day-w: calc(7 * var(--col) + 6 * var(--gutter));
+  }
+
+  .title {
+    grid-column: 1 / span 7;
+  }
+
+  /* The drawn day is the screen's rhythm bar enlarged about its own
+     centre line (see the head of this file): at the lock that line runs
+     0.084485 W under the H2's baseline, and the screen draws 08:45–22:50
+     over 0.92808 W with a bar 0.02253 W tall, so on the day's width D
+     (7 columns) the bar is 0.024276 D tall, centred on the same line. */
+  .day {
+    --bar-h: calc(0.024276 * var(--day-w));
+    grid-column: 1 / span 7;
+    margin-top: calc(0.084485 * var(--win) - 0.241 * var(--step-2) - var(--bar-h) / 2);
+  }
+
+  /* One measure in em (676px at 1440): three lines from 1024 up. */
+  .statement {
+    grid-column: 1 / span 7;
+    max-width: 21.1em;
+  }
+
+  /* 30em keeps the note on two lines up to 1920, in both languages. */
+  .note,
+  .case {
+    grid-column: 1 / span 5;
+  }
+
+  /* The lock: the screen's counter numerals (0.05156 W under the window's
+     top) on the H2's baseline (0.709em). */
+  .root .pan {
+    grid-column: 8 / span 5;
+    grid-row: 1 / span 6;
+    margin-top: calc(0.709 * var(--step-2) - 5.156%);
+  }
+
+  /* The band: at least c_alt's drop plus c_film's offset (96 + 64), and at
+     least the window's overhang under a lower-bound text column (H2 one
+     line, the day, statement three lines, note two, link one; caption two)
+     with 88px under the caption (wide screens, where the window is the
+     taller column, so c_film sits between it and c_alt's foot):
+     (0.709·s2 + 0.94844·W + 139.5px) −
+     (0.709·s2 + 0.084485·W + 0.012138·D + 3.54·s1 + 4.65·s0 + 159.5px).
+     c_film's offset grows with the width (64px at 1024, 155px at 1279), so
+     the free bands above and below it beside c_alt stay under 200px. */
+  .plates::before {
+    --band: calc(var(--space-3xl) + var(--space-2xl) + (100vw - 1024px) * 0.355);
+    padding-top: max(
+      var(--band),
+      calc(
+        0.863955 * var(--win) - 0.012138 * var(--day-w) - 3.54 * var(--step-1) - 4.65 * var(--step-0) - 20px
+      )
+    );
+  }
+
+  .root .alt {
+    grid-column: 2 / span 4;
+    margin-top: var(--space-3xl);
+  }
+
+  .root .film {
+    grid-column: 8 / span 4;
+  }
+}
+
+/* ── 1280+: c_alt 128px under the text; c_film 160px lower at 1280, 192px
+   at 1440 (02 §9.1), 288px at 1920 (where the window's foot leads) ────── */
+@media (min-width: 1280px) {
+  .plates::before {
+    --band: calc(2 * var(--space-4xl) + var(--space-l) + (100vw - 1280px) * 0.2);
+  }
+
+  .root .alt {
+    margin-top: var(--space-4xl);
+  }
+}
+
+/* ── Motion (02 §9.4, 01 §5). Hidden states only under html.js and
+   no-preference (globals.css): without JS or under reduced motion every
+   part is at rest and the window holds the lock. ─────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  /* The H2 rises as one line, so its baseline never splits; once the time
+     has all but landed (240ms), "in the dark" comes out of the dark, by
+     opacity only. */
+  :global(html.js) .root .title:not(:global(.is-in)) .rest {
+    opacity: 0;
+  }
+
+  :global(html.js) .root .title:global(.is-revealing) .rest {
+    transition: opacity var(--dur-fade) var(--ease-out) calc(var(--reveal-delay, 0ms) + 240ms);
+  }
+
+  /* The beat: a part flushed in the H2's batch (so not first in it) waits
+     those 240ms too, keeping the order time, "in the dark", the day,
+     statement, note, link, screens. A part that enters later on its own
+     (first of its batch, delay 0) does not wait. */
+  :global(html.js) .root:has(.title:global(.is-revealing)) [data-reveal]:global(.is-revealing):not(.title) {
+    transition-delay: calc(var(--reveal-delay, 0ms) + min(var(--reveal-delay, 0ms), 1ms) * 240);
+  }
+
+  /* The day plays once: each film's bar opens from its start in the day's
+     own order (its delay is its place in the day, over 360ms) and its
+     labels fade in behind it. The part itself never moves. */
+  :global(html.js) .root .day[data-reveal]:not(:global(.is-in)) {
+    opacity: 1;
+    transform: none;
+  }
+
+  :global(html.js) .root .day:not(:global(.is-in)) .bar {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  :global(html.js) .root .day:not(:global(.is-in)) :is(.name, .length) {
+    opacity: 0;
+  }
+
+  :global(html.js) .root .day:global(.is-revealing) {
+    --day-delay: var(--reveal-delay, 0ms);
+  }
+
+  :global(html.js) .root:has(.title:global(.is-revealing)) .day:global(.is-revealing) {
+    --day-delay: calc(var(--reveal-delay, 0ms) + min(var(--reveal-delay, 0ms), 1ms) * 240);
+  }
+
+  :global(html.js) .root .day:global(.is-revealing) .bar {
+    transition: clip-path var(--dur-drop) var(--ease-out) calc(var(--day-delay) + var(--x) * 360ms);
+  }
+
+  :global(html.js) .root .day:global(.is-revealing) :is(.name, .length) {
+    transition: opacity var(--dur-fade) var(--ease-out) calc(var(--day-delay) + var(--x) * 360ms + 160ms);
+  }
+
+  /* The window is a lit screen from its first pixel: its one motion is the
+     walk. Only its caption fades in, with the window's own beat. */
+  :global(html.js) .root .pan[data-reveal]:not(:global(.is-in)),
+  :global(html.js) .root.root .pan:not(:global(.is-in)) > [role="img"] {
+    opacity: 1;
+    transform: none;
+  }
+
+  :global(html.js) .root .pan:not(:global(.is-in)) > figcaption {
+    opacity: 0;
+  }
+
+  :global(html.js) .root .pan:global(.is-revealing) > figcaption {
+    transition: opacity var(--dur-panel) var(--ease-out);
+    transition-delay: inherit;
+  }
+
+  /* The screens settle as one batch (0.94 → 1 with opacity, 1200ms out),
+     c_alt first and c_film 70ms later, each from the top-left corner it
+     hangs from. The wrapper itself never moves; its delay (with the beat
+     when it enters with the H2) is handed to both screens. */
+  :global(html.js) .root .plates[data-reveal]:not(:global(.is-in)) {
+    opacity: 1;
+    transform: none;
+  }
+
+  .root .alt,
+  .root .film {
+    transform-origin: 0 0;
+  }
+
+  :global(html.js) .root .plates:not(:global(.is-in)) > [data-reveal] {
+    opacity: 0;
+    transform: scale(var(--settle-from));
+  }
+
+  :global(html.js) .root .plates:global(.is-in) > [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+
+  :global(html.js) .root .plates:global(.is-revealing) {
+    --plates-delay: var(--reveal-delay, 0ms);
+  }
+
+  :global(html.js) .root:has(.title:global(.is-revealing)) .plates:global(.is-revealing) {
+    --plates-delay: calc(var(--reveal-delay, 0ms) + min(var(--reveal-delay, 0ms), 1ms) * 240);
+  }
+
+  :global(html.js) .root .plates:global(.is-revealing) > [data-reveal] {
+    transition:
+      opacity var(--dur-settle) var(--ease-out),
+      transform var(--dur-settle) var(--ease-out);
+    transition-delay: var(--plates-delay);
+  }
+
+  :global(html.js) .root .plates:global(.is-revealing) > .film {
+    transition-delay: calc(var(--plates-delay) + 70ms);
+  }
+
+  /* On the phone the note and the link close the chapter: they fade in
+     place, so their boxes never sit below the observer's line where a page
+     ends right after them. */
+  @media (max-width: 599.98px) {
+    :global(html.js) .root .note[data-reveal]:not(:global(.is-in)),
+    :global(html.js) .root .case[data-reveal]:not(:global(.is-in)) {
+      transform: none;
+    }
+  }
+
+  /* Keyboard arrival (01 §5.1): with keyboard focus anywhere in the
+     chapter, every part is at rest at once, so the focused link never
+     shows before its heading. */
+  :global(html.js) .root.root:has(:focus-visible) :is([data-reveal], .rest, .pan > figcaption, .name, .length) {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  :global(html.js) .root.root:has(:focus-visible) .bar {
+    clip-path: inset(0);
+    transition: none;
+  }
+}
+
+/* ── The walk (01 §8.2): the reader's scroll walks the plan from its
+   masthead to the lock (the counter on the H2's baseline, the rhythm bar on
+   the drawn day's line), reached at 78% of the range and held. The range
+   opens as the window enters the viewport and closes as its top reaches
+   the bar (+16px), so the walk ends with the whole window in view: 1.2× to
+   1.4× the page's speed from 390 to 1920. Linear, transform only, on the
+   compositor. ───────────────────────────────────────────────────────────── */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .root .pan > [role="img"] {
+      view-timeline-inset: calc(var(--bar) + var(--space-s)) 0;
+    }
+
+    .root .pan img {
+      animation-name: walk;
+      animation-range: entry 0% exit 0%;
+    }
+  }
+}
+
+@keyframes walk {
+  from {
+    transform: translateY(0);
+  }
+
+  78%,
+  to {
+    transform: translateY(-26.809%);
+  }
+}

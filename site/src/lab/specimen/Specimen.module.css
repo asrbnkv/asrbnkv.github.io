@@ -1,0 +1,220 @@
+/* DEV-ONLY specimen of the Tréma system. Token values only. */
+.block {
+  overflow: clip;
+  padding: var(--space-3xl) var(--margin);
+  display: grid;
+  gap: var(--space-xl);
+}
+
+.head {
+  display: grid;
+  gap: var(--space-2xs);
+  max-width: 62ch;
+}
+
+.note {
+  font-size: var(--step--1);
+  line-height: var(--leading-small);
+  color: var(--field-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: var(--gutter);
+}
+
+.swatch {
+  display: grid;
+  gap: var(--space-3xs);
+  align-content: start;
+}
+
+.chip {
+  height: 96px;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+}
+
+.field {
+  display: grid;
+  gap: var(--space-m);
+  align-content: start;
+  padding: var(--space-xl) var(--space-l);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-m) var(--space-l);
+}
+
+.stack {
+  display: grid;
+  gap: var(--space-m);
+}
+
+.steps {
+  display: grid;
+  gap: var(--space-xl);
+}
+
+.step {
+  display: grid;
+  gap: var(--space-2xs);
+}
+
+.bilingual {
+  display: grid;
+  gap: var(--space-m);
+}
+
+@media (min-width: 1024px) {
+  .bilingual {
+    grid-template-columns: 1fr 1fr;
+    column-gap: var(--gutter);
+  }
+}
+
+.full {
+  margin-inline: calc(-1 * var(--margin));
+}
+
+/* Forced states, so rest / hover / focus / active can be read side by side. */
+.hover {
+  background-color: var(--btn-bg-hover) !important;
+}
+
+.focus {
+  outline: 2px solid var(--focus-color);
+  outline-offset: var(--focus-offset);
+}
+
+.active {
+  transform: scale(var(--press-scale));
+}
+
+.linkHover {
+  text-decoration-color: currentColor !important;
+}
+
+.linkActive {
+  opacity: 0.7;
+}
+
+/* Monument verification (01 §3.4): the real ë at 50% under the drawn dots. */
+/* The monument check stands apart from the stat row above it (a caption
+   over a giant word would read as a kicker): 160px, its caption under it. */
+.check {
+  margin-top: calc(var(--space-4xl) + var(--space-l) - var(--space-xl));
+}
+
+.caption {
+  margin-bottom: var(--space-xl);
+}
+
+.verify {
+  position: relative;
+  --margin: 0px;
+  --step-monument: 400px;
+}
+
+.verifyGlyph {
+  position: absolute;
+  inset: 0 auto auto 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-giant);
+  font-size: 400px;
+  line-height: var(--leading-giant);
+  letter-spacing: var(--tracking-giant);
+  white-space: nowrap;
+  color: var(--orange);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.verifyGlyph > span {
+  display: inline-block;
+}
+
+.verifyA {
+  margin-right: 0.012em;
+}
+
+.verifyR {
+  margin-right: calc(0.0145em + 0.012em);
+}
+
+.figures {
+  display: grid;
+  gap: var(--space-xl);
+}
+
+.figureOnDot {
+  display: grid;
+  gap: var(--space-m);
+}
+
+.plates {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--space-xl) var(--gutter);
+  align-items: start;
+}
+
+.plateL {
+  grid-column: 1 / span 8;
+}
+
+.plateM {
+  grid-column: 7 / span 6;
+}
+
+.plateS {
+  grid-column: 2 / span 4;
+}
+
+.plateXS {
+  grid-column: 9 / span 2;
+}
+
+.pan {
+  grid-column: 1 / span 5;
+}
+
+@media (max-width: 1023px) {
+  .plateL,
+  .plateM,
+  .plateS,
+  .pan {
+    grid-column: 1 / -1;
+  }
+
+  .plateXS {
+    grid-column: 1 / span 4;
+  }
+}
+
+.portraits {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+
+.portrait {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-s);
+  padding: var(--space-xl) var(--space-l);
+}
+
+.measure {
+  max-width: 720px;
+}
+
+.s120 {
+  max-width: 260px;
+}

@@ -1,0 +1,508 @@
+/*
+ * Stories, the live thing (01 §7.10, 02 §2.2). Rows on stone in full ink;
+ * the pick is a paper tab that meets the paper panel edge to edge, so tab
+ * and panel are one paper shape on stone (graft #12, a tone step: no
+ * border, shadow or radius). Its S marker is the clasp where they meet,
+ * and the only marker in the list. Charts and every orange dot sit on
+ * paper only (orange on stone fails 3:1). Text never changes colour: ink
+ * on stone, ink on paper; only the tab's edge moves.
+ *
+ * Travel lives in (prefers-reduced-motion: no-preference) blocks, so the
+ * global reduce clamp has no multi-value list to cycle: under reduce, a
+ * pick lands at once and only the hover underline fades (180ms).
+ */
+
+/* ══ The stage: rises once, 70ms after the invitation that names it ══════ */
+.stage {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :global(html.js) .stage:not([data-in]) {
+    opacity: 0;
+    transform: translate3d(0, var(--rise), 0);
+  }
+
+  /* Keyboard focus never lands on a stage that has not arrived. */
+  :global(html.js) .stage:not([data-in]):focus-within {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .stage[data-in] {
+    transition:
+      opacity var(--dur-fade) var(--ease-out),
+      transform var(--dur-rise) var(--ease-out);
+  }
+}
+
+/* ══ The row's parts (tabs, accordion, details) ══════════════════════════ */
+.persona {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: var(--weight-statement);
+  font-size: var(--step-1);
+  line-height: var(--leading-statement);
+  letter-spacing: var(--tracking-statement);
+  text-decoration-line: underline;
+  text-decoration-thickness: var(--underline-thickness);
+  text-underline-offset: var(--underline-offset);
+  text-decoration-color: transparent;
+  transition: text-decoration-color var(--dur-hover) var(--ease-hover);
+}
+
+.company {
+  display: block;
+  font-family: var(--font-text);
+  font-size: var(--step--1);
+  line-height: var(--leading-small);
+  color: var(--field-muted);
+  white-space: nowrap;
+}
+
+.marker {
+  display: inline-flex;
+}
+
+/* ══ Tab mode (JS, 1100px and up) ════════════════════════════════════════ */
+.tabs {
+  /* The clasp's room at a row's end: the parted S pair (3.5 dots) reaches
+     back from the seam over the gutter; a row's text keeps 16px clear of
+     it (24px once the company sits at the row's end, from 1280px). */
+  --clasp: calc(3.5 * var(--pair-d-s));
+  --row-end: max(var(--space-s), calc(var(--clasp) + var(--space-s) - var(--gutter)));
+
+  position: relative;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  margin-top: var(--space-xl);
+}
+
+/* The list bleeds 16px into the margin, so the tab has its padding while
+   every persona stays on the page's left edge. */
+.tablist {
+  grid-column: 1 / span 5;
+  position: relative;
+  display: grid;
+  grid-template-rows: repeat(var(--n), minmax(64px, 1fr));
+  margin-inline-start: calc(-1 * var(--space-s));
+}
+
+/* The paper tab: one row tall, under the rows (it comes first), running
+   from the page's edge across the gutter into the panel, so the picked
+   story is one paper field edge to edge, as the open band is on phones;
+   the text stays on the grid. It slides to a pointer pick on the out
+   curve, so it answers on the first frame and lands in 240ms, before the
+   story settles; a key pick and the load land at once. */
+.window {
+  position: absolute;
+  top: 0;
+  left: calc(var(--space-s) - var(--margin));
+  width: calc(100% + var(--gutter) + var(--margin) - var(--space-s));
+  height: calc(100% / var(--n));
+  background-color: var(--paper);
+  transform: translateY(calc(var(--i) * 100%));
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tabs[data-input="pointer"] .window {
+    transition: transform var(--dur-ui) var(--ease-out);
+  }
+}
+
+/* The clasp: the tab's S pair at its far end, where tab meets panel. It
+   rides the tab closed in the tréma, then parts with the story's pair
+   (storyMotion.ts); at rest it is drawn parted, grey then orange on paper. */
+.window .marker {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  margin-top: calc(var(--pair-d-s) / -2);
+}
+
+/* Roving tabindex: only the picked tab takes focus, and the paper tab
+   draws its ring (2px ink, 3px inside its edges: the tab meets the page's
+   edge) on its top, left and bottom, open toward the panel it belongs to,
+   so it never crosses the clasp. */
+.window::after {
+  content: "";
+  position: absolute;
+  inset: var(--focus-offset) 0 var(--focus-offset) var(--focus-offset);
+  border: 2px solid var(--ink);
+  border-right: 0;
+  visibility: hidden;
+}
+
+.tablist:has(.tab:focus-visible) .window::after {
+  visibility: visible;
+}
+
+.tab[aria-selected="true"]:focus-visible {
+  outline-color: transparent;
+}
+
+/* A row: persona over its company (the measured default, and always at
+   1100–1279px, where FR "En tant qu'analyste des ventes" is 366px of 372);
+   from 1280px, when every row of the locale fits (StoryTabs measures),
+   the company moves to the row's end on the persona's baseline. */
+.tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  row-gap: var(--space-3xs);
+  min-width: 0;
+  padding-block: 0;
+  padding-inline: var(--space-s) var(--row-end);
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.tabs[data-rows="inline"] {
+  --row-end: calc(var(--clasp) + var(--space-m) - var(--gutter));
+}
+
+.tabs[data-rows="inline"] .tab {
+  flex-flow: row wrap;
+  align-items: baseline;
+  align-content: center;
+  justify-content: space-between;
+  column-gap: var(--space-m);
+}
+
+.tab[aria-selected="true"] {
+  cursor: default;
+}
+
+/* Press promises the pick (the picked tab does nothing): 0.985, 140ms. */
+@media (prefers-reduced-motion: no-preference) {
+  .tab {
+    transition: transform var(--dur-press) var(--ease-out);
+  }
+
+  .tab[aria-selected="false"]:active {
+    transform: scale(var(--press-scale-row));
+  }
+}
+
+/* A fine pointer underlines the persona of a row that can still be picked. */
+@media (hover: hover) and (pointer: fine) {
+  .tab[aria-selected="false"]:hover .persona {
+    text-decoration-color: currentColor;
+  }
+}
+
+/* The panel: paper, all six stories in one cell (the tallest sets it). It
+   bleeds through the right margin to the page's edge, and its content
+   ends on the grid's right edge, under the bar's Email me. It carries no
+   data-field (it covers 7 of 12 columns; the bar takes only a field that
+   runs edge to edge): stone's tokens hold on paper (muted 5.80:1, band
+   4.50:1, orange 3.28:1), and only the ground changes. */
+.panels {
+  grid-column: 6 / -1;
+  display: grid;
+  margin-inline-end: calc(-1 * var(--margin));
+  background-color: var(--paper);
+}
+
+.panel {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: var(--space-xl) var(--margin) var(--space-xl) var(--space-xl);
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.panelActive {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+@media (max-width: 1279px) {
+  .panel {
+    padding: var(--space-l) var(--margin) var(--space-l) var(--space-l);
+  }
+}
+
+/* Wide screens: the panel grows with the page, its reading text does not
+   (at most ~75 characters a line; 70 at 1440, where this does nothing).
+   The drawing keeps the panel's measure. */
+.panel :is(.story, .outcome, .payoffBlock) {
+  max-width: 47rem;
+}
+
+/* ══ The story body (every mode) ═════════════════════════════════════════ */
+/* Read top down: the ask, what I did, what happened, the case. A shorter
+   story's spare height falls under its case link, never inside it. */
+.body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* The story card: one <p>; on desktop its clauses hang their label in a
+   column as wide as the widest label, at least 5.2em of Small (78px: FR
+   "En tant que" is 77px), each label on its clause's first baseline.
+   English words inside French never split: hyphens only where authored. */
+.story {
+  display: grid;
+  grid-template-columns: minmax(calc(5.2 * var(--step--1)), max-content) minmax(0, 1fr);
+  column-gap: var(--space-xs);
+  row-gap: var(--space-2xs);
+  margin: 0;
+  hyphens: manual;
+}
+
+.clause {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: baseline;
+}
+
+.clauseLabel {
+  grid-column: 1;
+  font-family: var(--font-text);
+  font-size: var(--step--1);
+  line-height: var(--leading-small);
+  color: var(--field-muted);
+  white-space: nowrap;
+}
+
+.clauseText {
+  grid-column: 2;
+  font-family: var(--font-text);
+  font-weight: var(--weight-small-em);
+  font-size: var(--step-0);
+  line-height: var(--leading-body);
+  text-wrap: pretty;
+}
+
+/* What I did · What happened. Side by side only in the wide panel (1280px
+   and up) and only when a drawing follows; below that a French column runs
+   ~26 characters and hyphenates line after line, so they stack. A story
+   with no drawing stacks them at the measure and sets What happened as its
+   payoff, at the statement step, 32px under what I did. */
+.outcome {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: var(--space-m);
+  margin-top: var(--space-l);
+}
+
+/* What I did runs longer than What happened in every story (budgets 150
+   and 130 characters), so it takes the wider column. */
+@media (min-width: 1280px) {
+  .panel .outcome[data-cols="2"] {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    column-gap: var(--space-l);
+  }
+}
+
+.outcomeHeading {
+  margin: 0;
+  font-family: var(--font-text);
+  font-weight: var(--weight-ui);
+  font-size: var(--step-0);
+  line-height: var(--leading-body);
+}
+
+.outcomeText {
+  margin: var(--space-3xs) 0 0;
+  font-size: var(--step-0);
+  line-height: var(--leading-body);
+  text-wrap: pretty;
+  hyphens: manual;
+}
+
+.payoffBlock {
+  margin-top: var(--space-l);
+}
+
+/* The payoff of a story with no drawing: the size of a pair's lead value. */
+.payoff {
+  margin: var(--space-2xs) 0 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-statement);
+  font-size: var(--step-1);
+  line-height: var(--leading-statement);
+  letter-spacing: var(--tracking-statement);
+  text-wrap: pretty;
+  hyphens: manual;
+}
+
+.visual {
+  margin-top: var(--space-l);
+}
+
+/* "~~Days~~ ●—● hours" at the statement step (01 §7.7), its caption under it. */
+.typeSet {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--step-1);
+  line-height: var(--leading-statement);
+  letter-spacing: var(--tracking-statement);
+}
+
+.typeSetCaption {
+  margin: var(--space-2xs) 0 0;
+  color: var(--field-muted);
+}
+
+.caseLine {
+  margin: var(--space-m) 0 0;
+  font-size: var(--step-0);
+  line-height: var(--leading-body);
+}
+
+.caseTitle {
+  font-weight: var(--weight-ui);
+}
+
+/* ══ Accordion (JS below 1100px) and details (no JS) ═════════════════════ */
+.accordion {
+  grid-column: 1 / -1;
+  margin-top: var(--space-xl);
+}
+
+/* Each item runs edge to edge. The open one is one paper band, its row and
+   its region, with the margin as inner padding (16px on phones). With JS
+   the open item carries data-field="paper" (the bar takes it as it passes);
+   a <details> cannot, so its open state sets the paper here. */
+.item {
+  margin-inline: calc(-1 * var(--margin));
+  padding-inline: var(--margin);
+}
+
+.item[open] {
+  background-color: var(--paper);
+}
+
+.rowHeading {
+  margin: 0;
+  font: inherit;
+}
+
+/* Persona and company in full ink and Small, no underline at rest (six
+   underlined headings read as a list of links); the open row ends on its
+   S pair, the clasp of its band. */
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "persona marker"
+    "company marker";
+  align-items: center;
+  column-gap: var(--space-s);
+  row-gap: var(--space-3xs);
+  width: 100%;
+  min-height: 60px;
+  padding-block: var(--space-s);
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  list-style: none;
+}
+
+.row::-webkit-details-marker {
+  display: none;
+}
+
+.row .persona {
+  grid-area: persona;
+}
+
+.row .company {
+  grid-area: company;
+}
+
+.row .marker {
+  grid-area: marker;
+}
+
+/* No JS: every summary holds the pair; only the open one shows it. */
+.item:not([open]) > .row .marker {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .row {
+    transition: transform var(--dur-press) var(--ease-out);
+  }
+
+  .row[aria-expanded="false"]:active,
+  .item:not([open]) > .row:active {
+    transform: scale(var(--press-scale-row));
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .row[aria-expanded="false"]:hover .persona,
+  .item:not([open]) > .row:hover .persona {
+    text-decoration-color: currentColor;
+  }
+}
+
+/* The region continues the open row's paper band. Never set display here:
+   [hidden] must win. */
+.region {
+  padding-bottom: var(--space-xl);
+}
+
+/* Phones and tablets: labels run in, so the clause text gets the measure;
+   "so that…" still starts its own line. The outcome stacks. */
+.accordion .story {
+  display: block;
+  max-width: var(--measure);
+}
+
+.accordion .clause {
+  display: inline;
+}
+
+.accordion .clause:last-child {
+  display: block;
+  margin-top: var(--space-2xs);
+}
+
+.accordion .outcome {
+  max-width: var(--measure);
+}
+
+/* No JS at 1100px and up: an 8-column column whose bands bleed 16px each
+   side, as the tab does. */
+@media (min-width: 1100px) {
+  .details {
+    grid-column: 1 / span 8;
+  }
+
+  .details .item {
+    margin-inline: calc(-1 * var(--space-s));
+    padding-inline: var(--space-s);
+  }
+}
+
+/* The pair's scale line ("…Scale 0 to 100%.") is one line from 600px: the
+   shared clamp can start it a pixel or two late, which wrapped the
+   developer's line at exactly the measure. */
+@media (min-width: 600px) {
+  .visual [data-pair-measure] {
+    white-space: nowrap;
+  }
+}

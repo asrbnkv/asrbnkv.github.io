@@ -1,0 +1,177 @@
+/*
+ * Dot field (01 §7.9), stat row (03 §14 A3) and the story card (01 §7.10,
+ * 03 §14 A1). Words stay words; one dot is one unit, said in the caption.
+ */
+
+/* ── Dot field: d 12px (8px on phones), gap = d, 10 per row. ── */
+.field {
+  --d: 12px;
+  --cols: 10;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), var(--d));
+  gap: var(--d);
+  width: max-content;
+}
+
+.cell {
+  display: block;
+  width: var(--d);
+  height: var(--d);
+  border-radius: 50%;
+}
+
+.after {
+  background-color: var(--field-after);
+}
+
+.before {
+  background-color: var(--field-before);
+}
+
+.faint {
+  background-color: var(--field-before);
+  opacity: 0.4;
+}
+
+.empty {
+  visibility: hidden;
+}
+
+.fieldCaption {
+  margin-top: var(--space-xs);
+  font-size: var(--step--1);
+  line-height: var(--leading-small);
+  color: var(--field-muted);
+}
+
+@media (max-width: 599px) {
+  .field {
+    --d: 8px;
+  }
+}
+
+/* Row by row: opacity and a 4px rise, 12ms per row, once (html.js only). */
+@media (prefers-reduced-motion: no-preference) {
+  :global(html.js) .field:not([data-in]) .cell {
+    opacity: 0;
+    transform: translate3d(0, 4px, 0);
+  }
+
+  .field[data-in] .cell {
+    transition:
+      opacity 400ms var(--ease-out),
+      transform 400ms var(--ease-out);
+    transition-delay: calc(var(--row) * var(--row-delay, 12ms));
+  }
+
+  /* The caption names what the rows counted: it follows the last row. */
+  :global(html.js) .field:not([data-in]) + .fieldCaption {
+    opacity: 0;
+  }
+
+  .field[data-in] + .fieldCaption {
+    transition: opacity 300ms var(--ease-out);
+    transition-delay: calc(var(--rows, 10) * var(--row-delay, 12ms));
+  }
+}
+
+/* One dot one unit, kept in print and in forced colours (Windows High
+   Contrast), where background colours would vanish. */
+.cell {
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+@media (forced-colors: active) {
+  .cell {
+    forced-color-adjust: none;
+  }
+
+  .after {
+    background-color: Highlight;
+  }
+
+  .before,
+  .faint {
+    background-color: CanvasText;
+  }
+}
+
+@media print {
+  .field .cell {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .field .faint {
+    opacity: 0.4 !important;
+  }
+
+  .fieldCaption {
+    opacity: 1 !important;
+  }
+}
+
+/* ── Stat row: three columns (two on phones), LS 700 values, Small captions under. ── */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  row-gap: var(--space-m);
+}
+
+.stat {
+  display: grid;
+  gap: var(--space-3xs);
+  align-content: start;
+}
+
+.statValue {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--step-1);
+  line-height: var(--leading-statement);
+  letter-spacing: var(--tracking-statement);
+}
+
+.statCaption {
+  font-size: var(--step--1);
+  line-height: var(--leading-small);
+  color: var(--field-muted);
+}
+
+@media (max-width: 599px) {
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ── Story card: "As a / I want / so that" hang in a 5.2em column. ── */
+.card {
+  display: grid;
+  gap: var(--space-xs);
+  margin: 0;
+}
+
+.clause {
+  display: grid;
+  grid-template-columns: 5.2em minmax(0, 1fr);
+  column-gap: var(--space-xs);
+  align-items: baseline;
+  margin: 0;
+}
+
+.clauseLabel {
+  font-size: var(--step--1);
+  line-height: var(--leading-small);
+  color: var(--field-muted);
+  hyphens: none;
+}
+
+.clauseText {
+  font-family: var(--font-text);
+  font-weight: var(--weight-small-em);
+  font-size: var(--step-0);
+  line-height: var(--leading-body);
+  max-width: var(--measure);
+}

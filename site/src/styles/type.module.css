@@ -1,0 +1,92 @@
+/*
+ * The Tréma type steps (01-system.md §3.3) as classes. Five sizes, far apart:
+ * 540 / 96 / 32 / 19 / 15 at 1440. Compose them, never re-derive them:
+ *
+ *   import t from "@/styles/type.module.css";
+ *   <h2 className={clsx(t.display, styles.title)}>…</h2>
+ *
+ * The monument and giant figures are graphic type: use <Monument> and
+ * <Figure>, which set their own fit.
+ */
+
+/* Display step: every H2, case H1, the role line, poster lines. LS 700. */
+.display {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--step-2);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-display);
+  text-wrap: balance;
+  hyphens: none;
+}
+
+/* Statement step: statements, persona rows, index metrics, figures in stat
+ * rows. Always a <p>/<li>/<blockquote>, at most 25 words. LS 500. */
+.statement {
+  font-family: var(--font-display);
+  font-weight: var(--weight-statement);
+  font-size: var(--step-1);
+  line-height: var(--leading-statement);
+  letter-spacing: var(--tracking-statement);
+  /* 2–4 lines of ≤ 25 words: balanced lines keep a short word ("at", "le")
+     from ending a line on its own. */
+  text-wrap: balance;
+  hyphens: manual;
+}
+
+/* Statement step in LS 700: index metrics, stat-row values. */
+.statementStrong {
+  composes: statement;
+  font-weight: var(--weight-display);
+}
+
+/* Body: running text, full ink, at most 62ch. Figtree 400. */
+.body {
+  font-family: var(--font-text);
+  font-weight: var(--weight-body);
+  font-size: var(--step-0);
+  line-height: var(--leading-body);
+  max-width: var(--measure);
+}
+
+/* Small: captions, labels under dots, case references, the footer row.
+ * Always UNDER what it labels. Figtree 400 (500 for emphasis). */
+.small {
+  font-family: var(--font-text);
+  font-weight: var(--weight-body);
+  font-size: var(--step--1);
+  line-height: var(--leading-small);
+}
+
+.smallStrong {
+  composes: small;
+  font-weight: var(--weight-small-em);
+}
+
+/* Secondary text in the field's muted colour (never for whole paragraphs). */
+.muted {
+  color: var(--field-muted);
+}
+
+/* UI: buttons, bar links, Copy. A weight, not a sixth size. Figtree 600. */
+.ui {
+  font-family: var(--font-text);
+  font-weight: var(--weight-ui);
+  font-size: var(--step-ui);
+  line-height: var(--leading-ui);
+}
+
+/* A value in a label (Pair labels, stat values): Figtree 600. */
+.value {
+  font-weight: var(--weight-ui);
+}
+
+/* Numbers that align in a column (stat rows, the month key). */
+.tabular {
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* Keep a phrase on one line ("Product Owner", "7h 56m"). */
+.nowrap {
+  white-space: nowrap;
+}

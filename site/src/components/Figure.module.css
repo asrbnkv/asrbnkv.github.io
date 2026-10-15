@@ -1,0 +1,48 @@
+/*
+ * Giant figures (01-system.md §3.5): +100%, 2×, 97%, 80+, case metrics.
+ * LS 800, −0.04em, leading 0.8, the field's ink (never orange: orange
+ * belongs to the dot). Lining, proportional figures.
+ *
+ * Fit rule: font-size = min(giant step, measure / ink width in em), where
+ * the measure is this component's own width (an inline-size container).
+ * Case covers add a height term (03 §14 A2) through --fig-rest.
+ */
+.frame {
+  display: block;
+  width: 100%;
+  container-type: inline-size;
+}
+
+.figure {
+  display: block;
+  width: max-content;
+  font-family: var(--font-display);
+  font-weight: var(--weight-giant);
+  font-size: min(var(--step-display), calc(100cqi / var(--fit)));
+  line-height: var(--leading-giant);
+  letter-spacing: var(--tracking-giant);
+  font-variant-numeric: lining-nums proportional-nums;
+  white-space: nowrap;
+  color: var(--field-ink);
+  /* first ink on the margin, not the advance box */
+  margin-left: calc(var(--ink-left, 0) * -1em);
+}
+
+.heightBound .figure {
+  font-size: min(
+    var(--step-display),
+    calc(100cqi / var(--fit)),
+    calc((100svh - var(--bar) - var(--fig-rest, 30rem)) / 0.8)
+  );
+}
+
+/* Right-aligned figures (on their dot): the ink is placed by JS, ±1px. */
+.end .figure {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+/* The French U+202F before % at giant size: half size, a 0.118em gap. */
+.nnbsp {
+  font-size: 0.5em;
+}

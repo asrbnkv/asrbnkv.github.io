@@ -1,0 +1,138 @@
+/*
+ * Buttons (01-system.md §7.4). Square, no pills, icons or arrows; the label
+ * names the action. Colours come from the field tokens (--btn-bg, --btn-ink,
+ * --btn-bg-hover), so the same button is orange/ink on paper, stone and ink,
+ * and ink/paper on the orange close. No disabled state exists.
+ */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--btn-height);
+  padding-inline: var(--btn-pad);
+  border: 0;
+  border-radius: var(--radius);
+  background-color: var(--btn-bg);
+  color: var(--btn-ink);
+  font-family: var(--font-text);
+  font-weight: var(--weight-ui);
+  font-size: var(--step-ui);
+  line-height: var(--leading-ui);
+  letter-spacing: 0;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    background-color var(--dur-hover) var(--ease-hover);
+}
+
+.button:active {
+  opacity: 1; /* links dim on press (globals.css); buttons scale instead */
+  transform: scale(var(--press-scale));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .button:hover {
+    background-color: var(--btn-bg-hover);
+  }
+}
+
+/* Reduced motion: the press is a colour step, not a scale (§5.4). */
+@media (prefers-reduced-motion: reduce) {
+  .button:active {
+    transform: none;
+    background-color: var(--btn-bg-hover);
+  }
+}
+
+/* The bar's Email me: 40px (36px on phones), 15px label. */
+.bar {
+  min-height: var(--bar-btn-height);
+  padding-inline: var(--bar-btn-pad);
+  font-size: var(--step--1);
+}
+
+/* Full width: the phone hero and the close. */
+.block {
+  display: flex;
+  width: 100%;
+}
+
+/*
+ * Text button (Copy, Menu, Show more): a 44×44 target through padding,
+ * underline 0.07em at 40% → 100% on hover, press dims to 0.7.
+ */
+.text {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target-min);
+  min-width: var(--target-min);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-family: var(--font-text);
+  font-weight: var(--weight-ui);
+  font-size: var(--step-ui);
+  line-height: var(--leading-ui);
+  text-decoration-line: underline;
+  text-decoration-thickness: var(--underline-thickness);
+  text-underline-offset: var(--underline-offset);
+  text-decoration-color: color-mix(in srgb, currentColor var(--underline-rest), transparent);
+  cursor: pointer;
+  transition:
+    text-decoration-color var(--dur-hover) var(--ease-hover),
+    opacity var(--dur-press) var(--ease-out);
+}
+
+.text:active {
+  opacity: 0.7;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .text:hover {
+    text-decoration-color: currentColor;
+  }
+}
+
+/* Keyboard focus snaps the underline to 100% with its ring (01 §5.1: keyboard
+   actions are not animated); only the press keeps its fade. */
+.text:focus-visible {
+  text-decoration-color: currentColor;
+  transition: opacity var(--dur-press) var(--ease-out);
+}
+
+/* Body size (Figtree 600 at --step-0): a text action set in running text's
+   size, e.g. the close's ways (02 §10.1). */
+.textBody {
+  font-size: var(--step-0);
+  line-height: var(--leading-body);
+}
+
+/* A link with its one-line note in Small after it ("Download CV  PDF, in French"). */
+.withNote {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--space-2xs);
+}
+
+/* A link with its description in Small under it (the phone menu's ways). */
+.noteBelow {
+  display: grid;
+  justify-items: start;
+  max-width: 34ch;
+}
+
+.noteBelow .note {
+  margin-top: calc(-1 * var(--space-3xs));
+}
+
+.note {
+  font-size: var(--step--1);
+  line-height: var(--leading-small);
+  color: var(--field-muted);
+}

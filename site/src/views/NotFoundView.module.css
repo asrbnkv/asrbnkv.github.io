@@ -1,0 +1,74 @@
+/* The 404 (01 §7.16, 03 §11): paper, content-sized, the dots fallen off "Artem". */
+.main {
+  /* the fallen monument's size (03 §11), shared with the gap under it */
+  --fallen-size: max(
+    3.5rem,
+    min(calc((100cqi - 2 * var(--margin)) / 3.125), calc((100svh - var(--bar) - 22rem) / 0.8))
+  );
+  padding-top: var(--space-2xl);
+  /* Short, so the footer's cap band and its homecoming dots land in the
+     first viewport: "fell off" and "came home" read on one screen. */
+  padding-bottom: var(--space-xl);
+  overflow: clip;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :global(html.js) .main {
+    animation: nf-fade 200ms var(--ease-hover) both;
+  }
+}
+
+@keyframes nf-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The 0.8 leading leaves 0.16em under the baseline: take it back so the
+   h1 sits 64px under the monument's baseline. */
+.monument {
+  margin-bottom: calc(var(--fallen-size) * -0.16);
+}
+
+/* The h1 rides up into the monument's empty descent band (the negative
+   margin above): it sits on a layer above the letters' boxes, so nothing
+   lies on top of the line, even where only a transparent box would. */
+.block {
+  position: relative;
+  z-index: 1;
+  padding-inline: var(--margin);
+  margin-top: var(--space-2xl);
+}
+
+/* Without JS both languages show, EN first: the second block keeps a wider
+   gap. With JS one block is display:none (globals.css), so each language's
+   h1 sits the same 64px under the monument. */
+:global(html:not(.js)) .block + .block {
+  margin-top: var(--space-3xl);
+}
+
+/* One line from 1024 in both languages (03 §11), at most two at 390. */
+.title {
+  max-width: none;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-m) var(--space-l);
+  margin-top: var(--space-l);
+}
+
+@media (max-width: 599px) {
+  .actions {
+    display: grid;
+    gap: var(--space-2xs);
+    justify-items: start;
+  }
+
+  .actions > :first-child {
+    width: 100%;
+    margin-bottom: var(--space-2xs);
+  }
+}

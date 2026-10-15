@@ -1,0 +1,260 @@
+/*
+ * The month in dots on one line (01 §7.11, kept from dir-5), as the
+ * product case draws it (sections/CaseStudy/Work.tsx). The home chapter
+ * draws the same month as a ring (MonthRing).
+ *
+ * Geometry: four week groups on the page grid, so a 4-track grid with the
+ * gutter as its gap lands every group on its column lines. In a group the
+ * day pitch is (group − r) / 4, capped at 66px; the slack a wide screen
+ * leaves goes to the weekends (each later week shifts right by a third of
+ * it), so the weekend always reads wider than a day, the first dot stays
+ * r/2 in and the review's right edge stays on the group's right edge. At
+ * 1440 (326px groups) that is dir-5 exactly: 32px in, 65.5px apart, 88px
+ * across each weekend. Labels start on their own dot's left edge (the
+ * review's ends on its right edge). All ink: no before or after.
+ *
+ *   --d  a day (one call with engineering)    12px · 10px in a month under 950px
+ *   --p  sprint planning                       36px · 32px under 1200px · 26px
+ *   --r  the product review                    64px · 52px under 1200px · 40px
+ */
+.month {
+  container-type: inline-size;
+  margin: 0;
+}
+
+/* Sizes follow the month's own width (it also sits in narrower slots, such
+   as the product case's 7 columns), so the review never touches its
+   neighbour: 12/36/64 from 1200px, 12/32/52 from 950px, 10/26/40 below. */
+.score,
+.labels,
+.key {
+  --d: 12px;
+  --p: 36px;
+  --r: 64px;
+}
+
+@container (max-width: 1199px) {
+  .score,
+  .labels,
+  .key {
+    --p: 32px;
+    --r: 52px;
+  }
+}
+
+@container (max-width: 949px) {
+  .score,
+  .labels,
+  .key {
+    --d: 10px;
+    --p: 26px;
+    --r: 40px;
+  }
+}
+
+.score {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  row-gap: var(--space-s);
+}
+
+.week {
+  position: relative;
+  height: var(--r);
+}
+
+.call {
+  --size: var(--d);
+}
+
+.planning {
+  --size: var(--p);
+}
+
+.review {
+  --size: var(--r);
+}
+
+.dot {
+  position: absolute;
+  top: 50%;
+  left: calc(
+    var(--r) / 2 + var(--week) * (100% - var(--r) - 4 * min((100% - var(--r)) / 4, 66px)) / 3 +
+      var(--day) * min((100% - var(--r)) / 4, 66px)
+  );
+  width: var(--size);
+  height: var(--size);
+  margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
+  border-radius: 50%;
+  background-color: var(--field-ink);
+  print-color-adjust: exact;
+}
+
+/* ── Labels (≥ 1024): one per week, on a shared line under the dots,
+   each starting on its own dot's left edge; the review's ends on its
+   dot's right edge, on the margin. Value (FT 600) over description. ── */
+.labels {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  margin-top: var(--space-s);
+  color: var(--field-ink);
+}
+
+.label {
+  display: block;
+  min-width: 0;
+  padding-inline-start: calc(
+    var(--r) / 2 - var(--size) / 2 + var(--week) * (100% - var(--r) - 4 * min((100% - var(--r)) / 4, 66px)) / 3
+  );
+}
+
+.label[data-kind="review"] {
+  padding-inline-start: 0;
+  text-align: end;
+}
+
+.value {
+  display: block;
+  font-weight: var(--weight-ui);
+}
+
+.text {
+  display: block;
+}
+
+/* ── The key (< 1024): one line per kind, its swatch at the drawing's own
+   size, its count in tabular figures. ── */
+.key {
+  display: none;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--field-ink);
+}
+
+.keyRow {
+  display: grid;
+  grid-template-columns: var(--r) minmax(0, 1fr);
+  column-gap: var(--space-s);
+  align-items: center;
+}
+
+.swatchCell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.swatch {
+  display: block;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background-color: var(--field-ink);
+  print-color-adjust: exact;
+}
+
+.keyText {
+  text-wrap: pretty;
+}
+
+.count {
+  font-weight: var(--weight-ui);
+}
+
+.count::after {
+  content: ":";
+}
+
+.count:lang(fr)::after {
+  content: "\a0:";
+}
+
+.caption {
+  margin-top: var(--space-l);
+  max-width: var(--measure);
+  text-wrap: pretty;
+}
+
+@media (max-width: 1023px) {
+  .labels {
+    display: none;
+  }
+
+  .key {
+    display: grid;
+    row-gap: var(--space-xs);
+    margin-top: var(--space-l);
+  }
+
+  .caption {
+    margin-top: var(--space-m);
+  }
+}
+
+@media (max-width: 599px) {
+  /* Two rows of two weeks. */
+  .score {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (forced-colors: active) {
+  .dot,
+  .swatch {
+    forced-color-adjust: none;
+    background-color: CanvasText;
+  }
+}
+
+@media print {
+  .month :is(.dot, .label, .keyRow, .caption) {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ══ Motion (02 §6.4). Hidden states exist only under html.js and
+   no-preference: without JS and under reduced motion the month is drawn.
+   Month.tsx sets data-played when the dot row enters (the system's reveal
+   line), then data-settled once the review has landed. --t per element:
+   days 18ms apart with a 70ms rest at each weekend, the review last; each
+   label (or key line) fades in as its dot lands. ══ */
+@media (prefers-reduced-motion: no-preference) {
+  :global(html.js) .month:not([data-played]) .dot {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+
+  /* The review drops in from above, last, like the ë's dots. */
+  :global(html.js) .month:not([data-played]) .dot.review {
+    transform: translate3d(0, calc(var(--r) * -0.5), 0);
+  }
+
+  :global(html.js) .month:not([data-played]) :is(.label, .keyRow, .caption) {
+    opacity: 0;
+  }
+
+  .month[data-played]:not([data-settled]) .dot {
+    transition:
+      opacity 520ms var(--ease-out),
+      transform 520ms var(--ease-out);
+    transition-delay: var(--t);
+  }
+
+  .month[data-played]:not([data-settled]) .dot.review {
+    transition-duration: var(--dur-drop);
+  }
+
+  .month[data-played]:not([data-settled]) :is(.label, .keyRow) {
+    transition: opacity 200ms var(--ease-out);
+    transition-delay: var(--t);
+  }
+
+  .month[data-played]:not([data-settled]) .caption {
+    transition: opacity var(--dur-ui) var(--ease-out);
+    transition-delay: var(--caption-t);
+  }
+}

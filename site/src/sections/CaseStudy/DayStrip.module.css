@@ -1,0 +1,326 @@
+/*
+ * The day strip (03-case-and-pages.md §7.4) on paper: linear time from
+ * 08:45 at the left margin to 22:50 at the right, no axis, ticks or grid.
+ * --x and --w are a slot's start and length as fractions of the day.
+ *
+ * Bars carry the weight of the plan's own rhythm bar (36px; 24px on
+ * phones). Under the labels, the alternatives' lane is always reserved
+ * (with JS), so opening it moves nothing: the tally and the button sit
+ * below it, still.
+ */
+.strip {
+  margin: 0;
+}
+
+.drawing {
+  position: relative;
+}
+
+.track {
+  position: relative;
+  height: 36px;
+}
+
+.bar {
+  position: absolute;
+  inset-block: 0;
+  left: calc(var(--x) * 100%);
+  width: calc(var(--w) * 100%);
+  background-color: var(--field-ink);
+  transform-origin: 0 50%;
+  transition:
+    background-color var(--dur-ui) var(--ease-hover),
+    opacity var(--dur-ui) var(--ease-hover);
+}
+
+/* Skipped: the film's bar fades to band at 40%, its title is struck. */
+.strip[data-skipped] .bar[data-skip] {
+  background-color: var(--band);
+  opacity: 0.4;
+}
+
+.strip[data-skipped] [data-skip] .title {
+  text-decoration-line: line-through;
+  text-decoration-thickness: 0.06em;
+}
+
+/* Labels under each bar: the title (600), then time · venue (400). */
+.labels {
+  position: relative;
+  height: calc(2 * var(--leading-small) * var(--step--1));
+  margin-top: var(--space-xs);
+}
+
+.label {
+  position: absolute;
+  top: 0;
+  left: calc(var(--x) * 100%);
+  display: grid;
+  white-space: nowrap;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.label[data-end] {
+  left: auto;
+  right: 0;
+  text-align: end;
+}
+
+.title {
+  font-weight: var(--weight-ui);
+}
+
+.when {
+  color: var(--field-muted);
+}
+
+/* Phones: the labels leave the bars and become a time-ordered list. */
+.list {
+  display: none;
+}
+
+/* ── The alternatives' lane: the two real films that fit the skipped slot,
+   8px band bars at their own times, each row clipped open from its slot's
+   start (360ms out, 45ms apart) and closed back to it (220ms). Present only
+   with JS; without it, the sentence under the tally says the same. ── */
+.alts {
+  display: none;
+}
+
+:global(html.js) .alts {
+  display: grid;
+  grid-template-rows: 1fr;
+}
+
+.altsInner {
+  display: grid;
+  row-gap: var(--space-xs);
+  min-height: 0;
+  padding-top: var(--space-m);
+}
+
+.alt {
+  position: relative;
+  display: block;
+  padding-top: calc(8px + var(--space-2xs));
+  visibility: hidden;
+  clip-path: inset(0 calc((1 - var(--x)) * 100%) 0 calc(var(--x) * 100%));
+  transition:
+    clip-path 220ms var(--ease-out),
+    visibility 0s linear 220ms;
+}
+
+.alts[data-on] .alt {
+  visibility: visible;
+  clip-path: inset(0 0 0 0);
+  transition:
+    clip-path var(--dur-clip) var(--ease-out) calc(var(--j) * 45ms),
+    visibility 0s linear 0s;
+}
+
+.altBar {
+  position: absolute;
+  top: 0;
+  left: calc(var(--x) * 100%);
+  width: calc(var(--w) * 100%);
+  height: 8px;
+  background-color: var(--band);
+}
+
+.altLabel {
+  display: block;
+  margin-left: calc(var(--x) * 100%);
+  white-space: nowrap;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* ── The tally and the skip. Values in LS 700, words in LS 500; the two
+   lines share one grid cell (its width is the wider line's), cross-fading
+   through a 2px blur. Only the live line can be hit or selected: the other
+   is hidden once its fade has run, and shown at once when it returns. ── */
+.tally {
+  display: grid;
+  row-gap: var(--space-m);
+  align-items: baseline;
+  margin-top: var(--space-l);
+}
+
+.counters {
+  display: grid;
+}
+
+.counterLine {
+  grid-area: 1 / 1;
+  text-box: trim-both cap alphabetic;
+  transition:
+    opacity 160ms var(--ease-out),
+    filter 160ms var(--ease-out),
+    visibility 0s linear 0s;
+}
+
+.counterLine[data-off] {
+  opacity: 0;
+  filter: blur(2px);
+  visibility: hidden;
+  transition:
+    opacity 160ms var(--ease-out),
+    filter 160ms var(--ease-out),
+    visibility 0s linear 160ms;
+}
+
+.value {
+  font-weight: var(--weight-display);
+  white-space: nowrap;
+}
+
+.sep {
+  color: var(--field-muted);
+}
+
+/* The control at the statement step, so the page's one live thing reads as
+   one; it sits in its own cell, so it never moves under the pointer. */
+.skip.skip {
+  justify-self: start;
+  font-family: var(--font-display);
+  font-weight: var(--weight-statement, 500);
+  font-size: var(--step-1);
+  letter-spacing: var(--tracking-statement);
+  transform-origin: 0 50%;
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    text-decoration-color var(--dur-hover) var(--ease-hover),
+    opacity var(--dur-press) var(--ease-out);
+}
+
+.skip.skip:active {
+  transform: scale(0.97);
+}
+
+@media (min-width: 1024px) {
+  .tally {
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: var(--gutter);
+  }
+
+  .skip.skip {
+    justify-self: end;
+  }
+}
+
+.noScript {
+  display: none;
+}
+
+:global(html:not(.js)) .skip {
+  display: none;
+}
+
+:global(html:not(.js)) .noScript {
+  display: block;
+  max-width: var(--measure);
+  margin-top: var(--space-m);
+}
+
+.caption {
+  margin-top: var(--space-l);
+}
+
+/* A keyboard press swaps by opacity only (160ms): no clip, no blur. */
+.strip[data-via-key] .alt {
+  clip-path: inset(0 0 0 0);
+  opacity: 0;
+  transition:
+    opacity 160ms var(--ease-out),
+    visibility 0s linear 160ms;
+}
+
+.strip[data-via-key] .alts[data-on] .alt {
+  opacity: 1;
+  transition:
+    opacity 160ms var(--ease-out),
+    visibility 0s linear 0s;
+}
+
+.strip[data-via-key] .counterLine {
+  filter: none;
+}
+
+@media (max-width: 599px) {
+  .track {
+    height: 24px;
+  }
+
+  .labels {
+    display: none;
+  }
+
+  .list {
+    display: grid;
+    row-gap: var(--space-3xs);
+    margin-top: var(--space-s);
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  .altLabel {
+    margin-left: 0;
+    white-space: normal;
+  }
+
+  /* The tally and the skip lead the strip; the alternatives open at its
+     foot, so nothing above the change moves under the thumb. */
+  .strip {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tally {
+    order: -1;
+    margin: 0 0 var(--space-l);
+  }
+
+  :global(html.js) .alts {
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 220ms var(--ease-out);
+  }
+
+  :global(html.js) .alts[data-on] {
+    grid-template-rows: 1fr;
+    transition-duration: var(--dur-panel);
+  }
+
+  .altsInner {
+    overflow: hidden;
+  }
+}
+
+/* ── Entrance, once: the bars draw in time order, labels after their bar. ── */
+@media (prefers-reduced-motion: no-preference) {
+  :global(html.js) .strip:not([data-in]) .bar {
+    transform: scaleX(0);
+  }
+
+  .strip[data-in] .bar {
+    transition:
+      transform 240ms var(--ease-out) calc(var(--k) * 45ms),
+      background-color var(--dur-ui) var(--ease-hover),
+      opacity var(--dur-ui) var(--ease-hover);
+  }
+
+  :global(html.js) .strip:not([data-in]) .label,
+  :global(html.js) .strip:not([data-in]) .list,
+  :global(html.js) .strip:not([data-in]) .tally {
+    opacity: 0;
+  }
+
+  .strip[data-in] .label {
+    transition: opacity 400ms var(--ease-out) calc(var(--k) * 45ms + 180ms);
+  }
+
+  .strip[data-in] .list {
+    transition: opacity 400ms var(--ease-out) 240ms;
+  }
+
+  .strip[data-in] .tally {
+    transition: opacity var(--dur-fade) var(--ease-out) 380ms;
+  }
+}

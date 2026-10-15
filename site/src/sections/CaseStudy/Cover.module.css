@@ -1,0 +1,387 @@
+/*
+ * The cover (03-case-and-pages.md §2). One grid, four variants:
+ *   P  figure on the margin over a Pair M, margin to margin (product)
+ *   C  figure right-aligned by ink onto the 97% dot, caption at left (payments)
+ *   S  figure on cols 1–6, a side group on 8–12 on its baseline (Havaianas, CRM, freelance)
+ *   T  figure across the measure, type-set pair and context under it (tracker, Cannes)
+ * Content-sized: no min-height, so the next field shows at the fold.
+ * Every text box is trimmed to cap top and baseline, so "on the figure's
+ * baseline" is literal: the boxes end where the ink stands.
+ */
+.cover {
+  display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  column-gap: var(--gutter);
+  align-items: start;
+  padding: 48px var(--margin) 64px;
+}
+
+.h1,
+.aside,
+.figure,
+.side,
+.pair,
+.lowerStart,
+.lowerEnd {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.h1 {
+  grid-row: 1;
+  text-box: trim-both cap alphabetic;
+}
+
+.line {
+  display: block;
+}
+
+.tagline,
+.caption,
+.typeSet,
+.context,
+.figureFrame {
+  text-box: trim-both cap alphabetic;
+}
+
+/* A figure with descenders ("3 days", "3 jours") keeps its descent, so
+   the row under it never meets the y or the j. */
+.cover[data-descends] .figureFrame {
+  text-box-edge: cap text;
+}
+
+/* The pair's caption (measure and scale) under its label band. */
+.pairCaption {
+  margin-top: var(--space-2xs);
+  max-width: var(--measure);
+  text-wrap: balance;
+}
+
+/* The content glues "at AppBazar (MTS)," and the dates, so the line
+   breaks before the dates, never inside the company. */
+.meta {
+  margin-top: var(--space-s);
+  max-width: 46ch;
+  text-wrap: pretty;
+}
+
+/* H1 → figure. The boxes are trimmed to ink, so the gap is ink to ink;
+   S and T covers are shorter, and take the larger gap, so every cover
+   reaches the fold with only the next field's edge showing (03 §2.4). */
+.figure {
+  margin-top: clamp(48px, 7svh, 80px);
+}
+
+.cover[data-variant="S"] .figure,
+.cover[data-variant="T"] .figure {
+  margin-top: clamp(64px, 12svh, 136px);
+}
+
+.cover[data-variant="S"],
+.cover[data-variant="T"] {
+  padding-bottom: var(--space-3xl);
+}
+
+/* A descending figure already carries its own space below the baseline. */
+.cover[data-descends] .figure {
+  margin-top: clamp(48px, 7svh, 80px);
+}
+
+.cover[data-descends] {
+  padding-bottom: 64px;
+}
+
+.side {
+  display: grid;
+  align-content: end;
+}
+
+.side > .typeSet {
+  margin-top: var(--space-m);
+}
+
+.side > .context {
+  margin-top: var(--space-s);
+}
+
+.pair,
+.lowerStart,
+.lowerEnd {
+  margin-top: var(--space-m);
+}
+
+/* At 390 a pair may wrap after the before words; the dots stay with the first after-word. */
+.typeSet {
+  max-width: 30ch;
+}
+
+/* ── ≥ 1100: H1 | aside, figure row, lower third. ───────────────────── */
+@media (min-width: 1100px) {
+  .h1 {
+    grid-column: 1 / 8;
+  }
+
+  .aside {
+    grid-column: 8 / 13;
+    grid-row: 1;
+  }
+
+  .figure,
+  .side {
+    grid-row: 2;
+  }
+
+  .pair,
+  .lowerStart,
+  .lowerEnd {
+    grid-row: 3;
+  }
+}
+
+/* S figures fit their box by the height term (03 §14 A2) with the giant
+   step's cap lifted: 2× ≈ 600px and 15+ ≈ 538px at 1440×900, while 80+
+   stays width-bound (≈ 445px). The cover then closes on the fold. */
+@media (min-width: 1100px) {
+  .cover[data-variant="S"] .figure {
+    --step-display: 100vw;
+  }
+
+  .cover[data-variant="S"] {
+    padding-bottom: 64px;
+  }
+}
+
+/* ── 1024–1099: the H1 takes the measure, the aside stacks on cols 1–8. ── */
+@media (min-width: 1024px) and (max-width: 1099px) {
+  .aside {
+    grid-column: 1 / 9;
+    grid-row: 2;
+    margin-top: var(--space-l);
+  }
+
+  .figure,
+  .side {
+    grid-row: 3;
+  }
+
+  .pair,
+  .lowerStart,
+  .lowerEnd {
+    grid-row: 4;
+  }
+}
+
+/* S keeps its side group on cols 8–12 from 1024; C its caption on cols 1–4 (FR 1–3). */
+@media (min-width: 1024px) {
+  .cover[data-variant="S"] .figure {
+    grid-column: 1 / 7;
+  }
+
+  .cover[data-variant="S"] .side {
+    grid-column: 8 / 13;
+    align-self: end;
+  }
+
+  .cover[data-variant="C"] .side {
+    grid-column: 1 / 5;
+    align-self: end;
+  }
+
+  .cover[data-variant="C"][data-locale="fr"] .side {
+    grid-column: 1 / 4;
+  }
+
+  .lowerStart {
+    grid-column: 1 / 8;
+  }
+
+  .lowerEnd {
+    grid-column: 8 / 13;
+    align-self: end;
+  }
+}
+
+/* ── 600–1023: everything stacks (tagline on cols 1–6). ─────────────── */
+@media (min-width: 600px) and (max-width: 1023px) {
+  /* An S figure is as large here as on a phone at least (2× ≈ 320px at
+     768, not the giant step's 230px), and the cover still ends inside the
+     first screen. */
+  .cover[data-variant="S"] .figure {
+    --step-display: min(320px, 42vw);
+  }
+
+  .aside {
+    grid-row: 2;
+    grid-column: 1 / 7;
+    margin-top: var(--space-l);
+  }
+
+  .figure {
+    grid-row: 3;
+  }
+
+  .cover[data-variant="C"] .side {
+    grid-row: 3;
+    grid-column: 1 / 4;
+    align-self: end;
+  }
+
+  .cover[data-variant="S"] .side {
+    grid-row: 4;
+    grid-column: 1 / 7;
+    margin-top: var(--space-l);
+  }
+
+  .pair,
+  .lowerStart {
+    grid-row: 5;
+  }
+
+  .lowerEnd {
+    grid-row: 6;
+    margin-top: var(--space-s);
+  }
+}
+
+/* ── < 600: H1 → figure → caption → pair → context → tagline → meta. ── */
+@media (max-width: 599px) {
+  /* Every figure fits the measure (the 120px floor left two thirds of it
+     empty); S figures stop at 300px, so the H1, the figure and the pair
+     stay in the first screen down to 375×667. */
+  .cover .figure {
+    --step-display: 100vw;
+  }
+
+  .cover[data-variant="S"] .figure {
+    --step-display: min(300px, 77vw);
+  }
+
+  .cover,
+  .cover[data-variant] {
+    padding-block: 24px 48px;
+  }
+
+  .figure,
+  .cover[data-variant] .figure {
+    grid-row: 2;
+    margin-top: var(--space-l);
+  }
+
+  .side {
+    grid-row: 3;
+    margin-top: var(--space-m);
+  }
+
+  .pair,
+  .lowerStart {
+    grid-row: 4;
+  }
+
+  .lowerEnd {
+    grid-row: 5;
+    margin-top: var(--space-s);
+  }
+
+  .aside {
+    grid-row: 6;
+    margin-top: var(--space-xl);
+  }
+}
+
+/* On the cover the inline pair is the S mark itself at the statement step
+   (16px dots at 1440, four diameters long), so the dots the work index and
+   the next-case link carry land on a mark of their own size and length. */
+.typeSet [aria-hidden="true"] {
+  --d: 0.5em;
+  --len: 4;
+  width: calc(var(--len) * var(--d));
+  margin-inline: 0.36em;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Arriving through the view transition (03 §9.2): no load beat; the pair
+     is drawn parted so the dots fly straight home; when the transition has
+     finished the run draws from the before dot and the labels fade in. */
+  :global(html.js[data-arrive]) .cover [data-beat] {
+    animation: none;
+    opacity: 1;
+  }
+
+  :global(html.js[data-arrive]) .cover [data-pair-drawing] > div,
+  :global(html.js[data-arrive]) .cover [data-pair] ul {
+    animation: none;
+    opacity: 1;
+  }
+
+  :global(html.js[data-arrive]) .cover .typeSet [aria-hidden="true"] > span:nth-child(3) {
+    transform: translateX(calc((var(--len) - 1) * var(--d)));
+    transition: none;
+  }
+
+  :global(html.js[data-arrive="vt"]) .cover [data-pair-drawing] [data-pair-bar],
+  :global(html.js[data-arrive="vt"]) .cover .typeSet [aria-hidden="true"] > span:nth-child(1) {
+    clip-path: inset(0 100% 0 0);
+    animation: none;
+    transition: none;
+  }
+
+  :global(html.js[data-arrive="vt"]) .cover [data-pair-label]:not([data-pair-label="start"]),
+  :global(html.js[data-arrive="vt"]) .cover [data-pair] ul {
+    opacity: 0;
+  }
+
+  :global(html.js[data-arrive="done"]) .cover [data-pair-drawing] [data-pair-bar],
+  :global(html.js[data-arrive="done"]) .cover .typeSet [aria-hidden="true"] > span:nth-child(1) {
+    clip-path: inset(0 0 0 0);
+    transition: none;
+    animation: case-draw 420ms var(--ease-in-out) both;
+  }
+
+  :global(html.js[data-arrive="done"]) .cover [data-pair-label]:not([data-pair-label="start"]),
+  :global(html.js[data-arrive="done"]) .cover [data-pair] ul {
+    animation: case-fade var(--dur-ui) var(--ease-hover) both;
+  }
+}
+
+@keyframes case-draw {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes case-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The carried dot keeps its group box: a round dot landing on the payments
+   capsule stretches into the pill instead of ballooning into a disc (VT
+   snapshots keep their aspect ratio by default). Case pages only.
+   Two rules with different declarations: the minifier would otherwise merge
+   them into one :is() list, where pseudo-elements never match. */
+:global(::view-transition-old(*.trema)) {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+
+:global(::view-transition-new(*.trema)) {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  image-rendering: auto;
+}
+
+/* Stopgap until Bar.module.css takes it (global request): the bar is
+   sticky and the root keeps scroll-padding-top (bar + 16px), so Chrome
+   counts every bar control as obscured and scrolls the page up ~458px on
+   each Tab into the bar. A matching negative scroll margin keeps the
+   reader's place; focus moves, the page does not (01 §5.1). */
+:global(header[data-bar] a),
+:global(header[data-bar] button) {
+  scroll-margin-top: calc(-1 * (var(--bar) + 16px));
+}

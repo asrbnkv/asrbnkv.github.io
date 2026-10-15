@@ -1,0 +1,745 @@
+/*
+ * `about` (paper field): 02-home.md §8, the route 01 §7.11.
+ * Token values only. The chapter hangs from three edges, the route's
+ * thirds (columns 1, 5 and 9 of 12): each place's dot, word, years and
+ * lines start on one x, and the ledger under them starts on the same three.
+ *
+ *   ≥ 1360  the H2 is the route: Moscow, Breda, Paris on the thirds, a dot
+ *           over each first letter like the ë's, the years at the statement
+ *           step under each word, then three authored Small lines.
+ *   600–1359  one row per place: the city at the display step on the left
+ *           (columns 1–4, or 1–3 on 8 columns), its years on the city's
+ *           baseline on the right, its lines under the years. The ledger
+ *           takes the same split: heads left, content right.
+ *   < 600   the H2 keeps the route on one line (three words, three dots);
+ *           the places' details follow as a stacked list.
+ */
+.root {
+  /* The route's dot is as tall as its word's capitals (League Spartan's
+     cap height, 0.66em of the display step): 63px over 96px words, 28px
+     over a phone's 42px. A measured mark, not a bullet: it scales with the
+     word it stands on. */
+  --route-d: calc(var(--step-2) * 0.66);
+  /* Air between a dot and the cap line of its word. */
+  --route-air: var(--space-xs);
+  /* League Spartan at leading 0.95: the cap line sits 0.05em under the top
+     of the line box (measured: baseline 0.71em, cap height 0.66em). */
+  --cap-inset: 0.05em;
+  /* Optical edge: the display face's M, B and P stand 0.04em inside their
+     advance; the words step back so their stems sit on the column line. */
+  --optical: -0.04em;
+  /* One beat per place (02 §8.4): 120ms apart, word, dot, then label. */
+  --route-step: 120ms;
+  --route-dot-after: var(--dur-ui);
+  --route-label-after: calc(var(--dur-ui) + var(--route-step));
+  --route-label-fade: var(--dur-ui);
+  display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  column-gap: var(--gutter);
+  padding-block: var(--section-gap);
+  padding-inline: var(--margin);
+}
+
+.root > * {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+/* ── The route: H2 (the three words) and the stops (an <ol>). ──────────── */
+.route {
+  min-width: 0;
+}
+
+.cities {
+  margin: 0;
+}
+
+.city,
+.mask,
+.word {
+  display: block;
+}
+
+.city {
+  position: relative;
+  padding-top: calc(var(--route-d) + var(--route-air) - var(--cap-inset));
+}
+
+.word {
+  margin-inline-start: var(--optical);
+}
+
+/* The dot over the word's first letter: its left edge on the word's stem.
+   Ink, ink, and Paris in the after colour, because it is now. Nothing
+   joins the dots. */
+.city::before,
+.stopCity::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--route-d);
+  height: var(--route-d);
+  border-radius: 50%;
+  background-color: var(--field-ink);
+}
+
+.city[data-now]::before,
+.stop[data-now] .stopCity::before {
+  background-color: var(--field-after);
+}
+
+/* His bust stands on the baseline of the place he is now (01 §8.3: at most
+   86px, never upscaled). The negative top margin keeps the line box the
+   word's own. */
+.bust {
+  margin: -1em 0 0 0.2em;
+  vertical-align: baseline;
+}
+
+.figure {
+  margin: 0;
+}
+
+.stops {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stopCity,
+.years,
+.lines {
+  margin: 0;
+}
+
+.stopCity {
+  position: relative;
+}
+
+/* The years: the route's time axis, at the statement step (League Spartan
+   500, proportional figures). */
+.years {
+  font-variant-numeric: lining-nums proportional-nums;
+}
+
+/* A stop's authored lines: one per line; each breaks only at its authored
+   point (between two unbreakable segments). */
+.line {
+  display: block;
+}
+
+.seg {
+  white-space: nowrap;
+}
+
+.caption {
+  margin: var(--space-xl) 0 0;
+  text-wrap: pretty;
+}
+
+/* ≥ 1360: the H2 is the route, on the thirds; the stops hang under their
+   words. The stop's own city is read, not shown. */
+@media (min-width: 1360px) {
+  .cities,
+  .stops {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: var(--gutter);
+  }
+
+  .lines {
+    margin-top: var(--space-2xs);
+  }
+
+  .stopCity {
+    position: absolute;
+    width: 1px;
+    height: 1px; /* visually hidden text, not a rule */
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 599px) {
+  .root {
+    --route-air: var(--space-2xs);
+  }
+}
+
+/* 600–1359: one row per place. The H2 is read, not shown; each stop shows
+   its own city at the display step, with its dot, on the left; its years
+   sit on the city's baseline on the right and its lines hang under them. */
+@media (min-width: 600px) and (max-width: 1359px) {
+  .cities {
+    position: absolute;
+    width: 1px;
+    height: 1px; /* visually hidden text, not a rule */
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .stops {
+    display: grid;
+    row-gap: var(--space-l);
+  }
+
+  .stop {
+    display: grid;
+    grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+    grid-template-rows: auto auto;
+    column-gap: var(--gutter);
+    align-items: last baseline;
+  }
+
+  .stopCity {
+    grid-column: 1 / span 3;
+    grid-row: 1;
+    padding-top: calc(var(--route-d) + var(--route-air) - var(--cap-inset));
+    white-space: nowrap;
+  }
+
+  .years {
+    grid-column: 4 / -1;
+    grid-row: 1;
+  }
+
+  .lines {
+    grid-column: 4 / -1;
+    grid-row: 2;
+    margin-top: var(--space-2xs);
+  }
+}
+
+/* On 12 columns (1024–1359) the city takes the first third. */
+@media (min-width: 1024px) and (max-width: 1359px) {
+  .stopCity {
+    grid-column: 1 / span 4;
+  }
+
+  .years,
+  .lines {
+    grid-column: 5 / -1;
+  }
+}
+
+/* < 600: the H2 keeps the route on one line, its three words spread over
+   the measure, each under its dot (a word that cannot fit wraps with its
+   dot). The details follow as a list: the city in Figtree 600 with its
+   years, then the lines. */
+@media (max-width: 599px) {
+  .cities {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    column-gap: var(--space-xs);
+  }
+
+  .city .bust {
+    display: none;
+  }
+
+  .stops {
+    display: grid;
+    row-gap: var(--space-l);
+    margin-top: var(--space-xl);
+  }
+
+  .stop {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 0.3em;
+  }
+
+  .stopCity {
+    font-family: var(--font-text);
+    font-weight: var(--weight-ui);
+    font-size: var(--step-0);
+    line-height: var(--leading-body);
+    letter-spacing: 0;
+  }
+
+  .stopCity::before,
+  .stopCity .bust {
+    display: none;
+  }
+
+  .stopCity .word {
+    margin-inline-start: 0;
+  }
+
+  .years {
+    font-family: var(--font-text);
+    font-weight: var(--weight-body);
+    font-size: var(--step-0);
+    line-height: var(--leading-body);
+    letter-spacing: 0;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  /* « Paris depuis 2023 »: in the run-in head the years continue the
+     city's line, so they open in lower case. */
+  .years::first-letter {
+    text-transform: lowercase;
+  }
+
+  .lines {
+    flex-basis: 100%;
+    margin-top: var(--space-3xs);
+  }
+
+  .caption {
+    margin-top: var(--space-l);
+  }
+
+}
+
+@media (forced-colors: active) {
+  .city::before,
+  .stopCity::before {
+    forced-color-adjust: none;
+    background-color: CanvasText;
+  }
+
+  .city[data-now]::before,
+  .stop[data-now] .stopCity::before {
+    background-color: Highlight;
+  }
+}
+
+/* ── The statement, with the CV on its last baseline (from 1280px). ───── */
+.statement {
+  margin: var(--space-2xl) 0 0;
+}
+
+.cv {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--space-xs);
+  margin: var(--space-m) 0 0;
+}
+
+/* The link's 2px ring (3px out) keeps 7px clear of "The full CV:" and of
+   "PDF, in French". */
+.cvLink {
+  column-gap: var(--space-xs);
+}
+
+@media (min-width: 1024px) {
+  .root > .statement {
+    grid-column: 1 / span 8;
+  }
+}
+
+@media (min-width: 1280px) {
+  .root > .statement {
+    align-self: last baseline;
+  }
+
+  .root > .cv {
+    grid-column: 9 / -1;
+    align-self: last baseline;
+    margin-top: 0;
+  }
+}
+
+@media (min-width: 1440px) {
+  .root > .statement {
+    grid-column: 1 / span 7;
+  }
+}
+
+/* ── The ledger: Experience; Languages, Certifications, Tools. ───────────
+   One rule for every list: a name in Figtree 600 (a role, a tool group),
+   what qualifies it in Small muted; certifications and languages are
+   names in body text with their date or level in Small muted. */
+.ledger {
+  display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  column-gap: var(--gutter);
+  row-gap: var(--space-xl);
+  align-items: start;
+  margin-top: var(--space-2xl);
+}
+
+@media (min-width: 600px) {
+  .ledger {
+    margin-top: var(--space-3xl);
+  }
+}
+
+.ledger > * {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.facts {
+  display: grid;
+  row-gap: var(--space-xl);
+  align-content: start;
+}
+
+.block {
+  min-width: 0;
+}
+
+/* A ledger head: the display face at the body size (the wordmark's
+   setting), so it reads as a head and not as the first entry. */
+.h3 {
+  margin: 0 0 var(--space-s);
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--step-0);
+  line-height: var(--leading-body);
+  letter-spacing: var(--tracking-statement);
+}
+
+.entries,
+.langList,
+.certList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.entries {
+  display: grid;
+  row-gap: var(--space-l);
+}
+
+.role,
+.meta,
+.note {
+  margin: 0;
+}
+
+.role {
+  text-wrap: balance;
+}
+
+.meta {
+  margin-top: var(--space-3xs);
+}
+
+.note {
+  margin-top: var(--space-2xs);
+  max-inline-size: var(--measure);
+  text-wrap: pretty;
+}
+
+/* Languages: one line, each level in Small muted after its name; the line
+   breaks only between languages. */
+.lang {
+  display: inline;
+  white-space: nowrap;
+}
+
+.sep {
+  padding-inline-start: 0.3em;
+  color: var(--field-muted);
+}
+
+.certList {
+  display: grid;
+  row-gap: var(--space-2xs);
+}
+
+/* A certification and its date on one row; the dates form one column. */
+.cert {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: var(--space-s);
+  align-items: baseline;
+}
+
+@media (max-width: 599px) {
+  .cert {
+    column-gap: var(--space-xs);
+  }
+}
+
+/* Tools: the group's name run in, then its items (they break only after a
+   comma). */
+.toolList {
+  display: grid;
+  row-gap: var(--space-2xs);
+  margin: 0;
+}
+
+/* A tool row is a list line, not running text: it takes the full width,
+   and its last item never stands alone on a line. */
+.tool {
+  max-width: none;
+  text-wrap: pretty;
+}
+
+.tool > dt,
+.tool > dd {
+  display: inline;
+  margin: 0;
+}
+
+.tool > dt {
+  margin-inline-end: 0.45em;
+}
+
+/* 600–1359: heads hang on the left (columns 1–3, or 1–4 on 12 columns),
+   content on the right, first baselines shared, like the route's rows. */
+@media (min-width: 600px) and (max-width: 1359px) {
+  .ledger,
+  .facts {
+    row-gap: var(--list-gap);
+  }
+
+  .block {
+    display: grid;
+    grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+    column-gap: var(--gutter);
+    align-items: baseline;
+  }
+
+  .block > .h3 {
+    grid-column: 1 / span 3;
+    margin: 0;
+  }
+
+  .block > :not(.h3) {
+    grid-column: 4 / -1;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1359px) {
+  .block > .h3 {
+    grid-column: 1 / span 4;
+  }
+
+  .block > :not(.h3) {
+    grid-column: 5 / -1;
+  }
+}
+
+/* From 1024px the certifications' dates stand on column 9, under the CV
+   line (and, from 1360px, under Paris). */
+@media (min-width: 1024px) {
+  .cert {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--gutter);
+  }
+}
+
+/* ≥ 1360: Experience under Moscow (columns 1–4); Certifications, Languages
+   and Tools under Breda (5–12). */
+@media (min-width: 1360px) {
+  .ledger > .experience {
+    grid-column: 1 / span 4;
+  }
+
+  .ledger > .facts {
+    grid-column: 5 / -1;
+  }
+}
+
+/* ── Motion (02 §8.4; 01 §5). Screen only: a hidden state never reaches
+   print. One trigger: the route is one reveal part that never moves
+   itself; each place takes one beat, 120ms apart. Its word rises out of
+   its baseline (900ms, transform only, full ink), its dot drops onto it
+   like the ë's (240ms later, 560ms, solid within 140ms), its years and
+   lines appear as the dot lands (360ms later, opacity only, 240ms). The
+   caption follows Paris. RouteWalk holds the statement, the CV line and
+   the ledger until the route has been read (reading order); a hold is a
+   delay on top of the part's own, so the part's transition is declared
+   here for its whole life and is never cut by the engine's cleanup. ── */
+@media screen and (prefers-reduced-motion: no-preference) {
+  .route {
+    --route-t: var(--reveal-delay, 0ms);
+  }
+
+  .mask {
+    clip-path: inset(-1em -0.25em 0 -0.25em);
+  }
+
+  :global(html.js) .root .route[data-reveal]:not(:global(.is-in)) {
+    opacity: 1;
+    transform: none;
+  }
+
+  :global(html.js) .route:not(:global(.is-in)) .city .word {
+    transform: translate3d(0, 1.25em, 0);
+  }
+
+  :global(html.js) .route:not(:global(.is-in)) .city::before {
+    opacity: 0;
+    transform: translate3d(0, calc(-1 * var(--route-d)), 0);
+  }
+
+  :global(html.js) .route:not(:global(.is-in)) .caption {
+    opacity: 0;
+  }
+
+  :global(html.js) .route:global(.is-revealing) .city .word {
+    transition: transform var(--dur-rise) var(--ease-out);
+    transition-delay: calc(var(--route-t) + var(--i) * var(--route-step));
+  }
+
+  :global(html.js) .route:global(.is-revealing) .city::before {
+    transition:
+      opacity var(--dur-press) var(--ease-out),
+      transform var(--dur-drop) var(--ease-out);
+    transition-delay: calc(var(--route-t) + var(--i) * var(--route-step) + var(--route-dot-after));
+  }
+
+  :global(html.js) .route:global(.is-revealing) .caption {
+    transition: opacity var(--route-label-fade) var(--ease-out);
+    transition-delay: calc(var(--route-t) + 3 * var(--route-step) + var(--route-label-after));
+  }
+
+  /* The held parts: the phone's place details, the statement, the CV
+     line, every ledger part. */
+  :global(html.js) .root .stop.stop[data-reveal] {
+    transition:
+      opacity var(--dur-fade) var(--ease-out),
+      transform var(--dur-rise) var(--ease-out);
+    transition-delay: calc(var(--reveal-delay, 0ms) + var(--hold, 0ms));
+  }
+
+  :global(html.js) .root > .statement.statement[data-reveal] {
+    transition:
+      opacity var(--dur-fade) var(--ease-out),
+      transform var(--dur-rise) var(--ease-out);
+    transition-delay: calc(var(--reveal-delay, 0ms) + var(--hold, 0ms));
+  }
+
+  :global(html.js) .root > .cv.cv[data-reveal] {
+    transition:
+      opacity var(--dur-fade) var(--ease-out),
+      transform var(--dur-rise) var(--ease-out);
+    transition-delay: calc(var(--reveal-delay, 0ms) + var(--hold, 0ms));
+  }
+
+  :global(html.js) .root .ledger [data-reveal][data-reveal] {
+    transition:
+      opacity var(--dur-fade) var(--ease-out),
+      transform var(--dur-rise) var(--ease-out);
+    transition-delay: calc(var(--reveal-delay, 0ms) + var(--hold, 0ms));
+  }
+
+  /* Focus never waits for a hold: a part holding focus shows at once. */
+  :global(html.js) .root > .cv.cv[data-reveal]:focus-within {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  :global(html.js) .root .ledger [data-reveal][data-reveal]:focus-within {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* From 600px the stops are the route's labels: they ride its beat, not
+   their own entrance (their own part is for the phone's stacked list). */
+@media screen and (prefers-reduced-motion: no-preference) and (min-width: 600px) {
+  :global(html.js) .root .stop[data-reveal]:not(:global(.is-in)) {
+    opacity: 1;
+    transform: none;
+  }
+
+  :global(html.js) .route:not(:global(.is-in)) .years {
+    opacity: 0;
+  }
+
+  :global(html.js) .route:not(:global(.is-in)) .lines {
+    opacity: 0;
+  }
+
+  :global(html.js) .route:global(.is-revealing) .years {
+    transition: opacity var(--route-label-fade) var(--ease-out);
+    transition-delay: calc(var(--route-t) + var(--i) * var(--route-step) + var(--route-label-after));
+  }
+
+  :global(html.js) .route:global(.is-revealing) .lines {
+    transition: opacity var(--route-label-fade) var(--ease-out);
+    transition-delay: calc(var(--route-t) + var(--i) * var(--route-step) + var(--route-label-after));
+  }
+}
+
+/* 600–1359: the place's own city carries the word and the dot. */
+@media screen and (prefers-reduced-motion: no-preference) and (min-width: 600px) and (max-width: 1359px) {
+  :global(html.js) .route:not(:global(.is-in)) .stopCity .word {
+    transform: translate3d(0, 1.25em, 0);
+  }
+
+  :global(html.js) .route:not(:global(.is-in)) .stopCity::before {
+    opacity: 0;
+    transform: translate3d(0, calc(-1 * var(--route-d)), 0);
+  }
+
+  :global(html.js) .route:global(.is-revealing) .stopCity .word {
+    transition: transform var(--dur-rise) var(--ease-out);
+    transition-delay: calc(var(--route-t) + var(--i) * var(--route-step));
+  }
+
+  :global(html.js) .route:global(.is-revealing) .stopCity::before {
+    transition:
+      opacity var(--dur-press) var(--ease-out),
+      transform var(--dur-drop) var(--ease-out);
+    transition-delay: calc(var(--route-t) + var(--i) * var(--route-step) + var(--route-dot-after));
+  }
+}
+
+/* Reduced motion: nothing travels, but the order is the information.
+   RouteWalk hides a route still below the screen, then fades its places
+   in one after the other when it shows (200ms each, 01 §5.4). */
+@media screen and (prefers-reduced-motion: reduce) {
+  .root[data-walk="pending"] .city {
+    opacity: 0;
+  }
+
+  .root[data-walk="pending"] .stopCity {
+    opacity: 0;
+  }
+
+  .root[data-walk="pending"] .years {
+    opacity: 0;
+  }
+
+  .root[data-walk="pending"] .lines {
+    opacity: 0;
+  }
+
+  .root[data-walk="pending"] .caption {
+    opacity: 0;
+  }
+
+  .root[data-walk="go"] .city {
+    transition: opacity 200ms var(--ease-out);
+    transition-delay: calc(var(--i) * var(--route-step));
+  }
+
+  .root[data-walk="go"] .stopCity {
+    transition: opacity 200ms var(--ease-out);
+    transition-delay: calc(var(--i) * var(--route-step));
+  }
+
+  .root[data-walk="go"] .years {
+    transition: opacity 200ms var(--ease-out);
+    transition-delay: calc(var(--route-label-after) + var(--i) * var(--stagger));
+  }
+
+  .root[data-walk="go"] .lines {
+    transition: opacity 200ms var(--ease-out);
+    transition-delay: calc(var(--route-label-after) + var(--i) * var(--stagger));
+  }
+
+  .root[data-walk="go"] .caption {
+    transition: opacity 200ms var(--ease-out);
+    transition-delay: calc(var(--route-label-after) + 3 * var(--stagger));
+  }
+}

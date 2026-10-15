@@ -1,0 +1,151 @@
+/*
+ * The quote poster (03 §4), the roadmap artefact (§6) and the retro (§5.1).
+ */
+
+/* ── The quote: the case pages' one centred moment and one declared rest. ── */
+.quote {
+  display: grid;
+  place-items: center;
+  min-height: 80svh;
+  padding: var(--section-gap) var(--margin);
+}
+
+.quoteFigure {
+  display: grid;
+  justify-items: center;
+  width: 100%;
+  margin: 0;
+  text-align: center;
+  container-type: inline-size;
+}
+
+.blockquote {
+  margin: 0;
+  hanging-punctuation: none;
+}
+
+/* Set at the giant family's scale, fit to 85% of the measure by the EN
+   line's measured width (7.46em; the FR line is narrower): about 157px and
+   1170px wide at 1440. Phones keep the display step (42px, 313px). */
+.quoteLine.quoteLine {
+  font-size: max(min(var(--step-2), calc(100cqi / 7.46)), min(var(--step-display), calc(85cqi / 7.46)));
+  hanging-punctuation: none;
+  white-space: nowrap;
+  /* trimmed to the cap top and the descent, so the attribution clears the
+     g of "god" by --space-m */
+  text-box: trim-both cap text;
+}
+
+.source {
+  margin-top: var(--space-m);
+}
+
+@media (max-width: 599px) {
+  .quote {
+    min-height: 64svh;
+  }
+}
+
+/* ── The artefact: the roadmap, margin to margin. ── */
+.artefactPlate {
+  display: grid;
+  justify-items: start;
+}
+
+.open {
+  margin-top: var(--space-2xs);
+}
+
+/* ── The retro: the imperative is the H2; the reason on its last baseline. ── */
+.retro {
+  row-gap: var(--space-l);
+}
+
+.reason {
+  grid-column: 1 / -1;
+  min-width: 0;
+  max-width: var(--measure);
+  text-box: trim-both cap alphabetic;
+}
+
+.frame {
+  grid-column: 1 / -1;
+  margin-top: calc(var(--space-s) - var(--space-l));
+}
+
+@media (min-width: 1100px) {
+  .retro {
+    align-items: last baseline;
+  }
+
+  .retroLine {
+    grid-column: 1 / 8;
+    grid-row: 1;
+  }
+
+  .reason {
+    grid-column: 8 / 13;
+    grid-row: 1;
+  }
+
+  .frame {
+    grid-column: 8 / 13;
+    grid-row: 2;
+    align-self: start;
+  }
+}
+
+/* The H2's lines rise 90ms apart out of a mask; the reason follows 70ms
+   after the last line. The mask is each word's own box, open above (accents
+   on capitals stay whole) and closed 0.08em under the line box, where the
+   descenders end. */
+.word {
+  display: inline-block;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+  clip-path: inset(-0.5em -0.2em 0 -0.2em);
+}
+
+.wordInner {
+  display: inline-block;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* The heading never fades: the mask is the reveal. */
+  :global(html.js) [data-reveal-root] .lineRise[data-reveal]:not(:global(.is-in)) {
+    opacity: 1;
+  }
+
+  :global(html.js) .lineRise:not(:global(.is-in)) .wordInner {
+    transform: translate3d(0, 105%, 0);
+  }
+
+  .lineRise:global(.is-revealing) .wordInner {
+    transition: transform var(--dur-rise) var(--ease-out) calc(var(--reveal-delay, 0ms) + var(--l, 0) * 90ms);
+  }
+
+  :global(html.js) [data-reveal-root] .reason[data-reveal]:global(.is-revealing) {
+    transition-delay: calc(var(--reveal-delay, 0ms) + 90ms);
+  }
+
+  :global(html.js) [data-reveal-root] .frame[data-reveal]:global(.is-revealing) {
+    transition-delay: calc(var(--reveal-delay, 0ms) + 90ms);
+  }
+
+  /* The quote is the page's rest: a slow settle in place, no travel, the
+     attribution after it. */
+  .blockquote,
+  .source {
+    --reveal-travel: 0px;
+  }
+
+  :global(html.js) [data-reveal-root] .blockquote[data-reveal]:global(.is-revealing) {
+    transition: opacity var(--dur-settle) var(--ease-out);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+
+  :global(html.js) [data-reveal-root] .source[data-reveal]:global(.is-revealing) {
+    transition: opacity var(--dur-fade) var(--ease-out);
+    transition-delay: calc(var(--reveal-delay, 0ms) + 480ms);
+  }
+}

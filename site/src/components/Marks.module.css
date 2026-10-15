@@ -1,0 +1,139 @@
+/*
+ * Small pair forms: the S mark (01 §7.6 S, §7.12) and the type-set pair
+ * (01 §7.7, 03 §14 A5). Both rest in the tréma arrangement and part once on
+ * entry (only under html.js and no-preference; otherwise drawn parted).
+ */
+
+/* ── PairMark: two dots and their run, not to scale (an emblem, not a chart). ── */
+.mark {
+  --d: var(--pair-d-s);
+  --len: 4;
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: calc(var(--len) * var(--d));
+  height: var(--d);
+  vertical-align: middle;
+}
+
+.markM {
+  --d: var(--pair-d-m);
+}
+
+.dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--d);
+  height: var(--d);
+  border-radius: 50%;
+}
+
+.dotBefore {
+  background-color: var(--field-before);
+}
+
+.dotAfter {
+  background-color: var(--field-after);
+  transform: translateX(calc((var(--len) - 1) * var(--d)));
+}
+
+/* The run of dots, as in the Pair (0.25d at a 0.5d pitch), drawn by clip-path. */
+.bar {
+  position: absolute;
+  top: calc(var(--d) * 0.375);
+  left: calc(var(--d) / 2);
+  width: calc((var(--len) - 1) * var(--d));
+  height: calc(var(--d) * 0.25);
+  background-color: var(--field-after);
+  mask: var(--dot-run) 0 0 / calc(var(--d) * 0.5) 100% space no-repeat;
+  clip-path: inset(0 0 0 0);
+}
+
+/* ── TypeSetPair: "Days ●—● about two hours". ── */
+.typeset {
+  /* the inline pair sits on the x-height's middle; LS x-height 0.41em */
+  --xh: 0.41em;
+}
+
+.typesetText {
+  --xh: 0.5em; /* Figtree */
+}
+
+.struck {
+  color: var(--field-muted);
+  text-decoration-line: line-through;
+  text-decoration-thickness: 0.06em;
+  text-decoration-color: currentColor;
+}
+
+.inline {
+  --d: 0.32em;
+  --len: 5; /* 1.6em / 0.32em */
+  position: relative;
+  display: inline-block;
+  width: 1.6em;
+  height: var(--d);
+  margin-inline: 0.28em;
+  vertical-align: calc(var(--xh) / 2 - var(--d) / 2);
+}
+
+.inline .bar {
+  top: calc(var(--d) / 2 - 0.04em);
+  height: 0.08em;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :global(html.js) .partable:not([data-parted]) .dotAfter {
+    transform: translateX(calc(var(--d) * 1.27));
+  }
+
+  :global(html.js) .partable:not([data-parted]) .bar {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  .partable[data-parted] .dotAfter {
+    transition: transform var(--part-dur, var(--dur-part)) var(--ease-in-out) var(--part-delay, 120ms);
+  }
+
+  .partable[data-parted] .bar {
+    transition: clip-path var(--part-dur, var(--dur-part)) var(--ease-in-out) var(--part-delay, 120ms);
+  }
+}
+
+/* The dots and their run are background colours: printed as drawn, and in
+   forced colours (Windows High Contrast) painted in system colours instead
+   of vanishing: before in CanvasText, after and run in Highlight. */
+.dot,
+.bar {
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+@media (forced-colors: active) {
+  .dot,
+  .bar {
+    forced-color-adjust: none;
+  }
+
+  .dotBefore {
+    background-color: CanvasText;
+  }
+
+  .dotAfter,
+  .bar {
+    background-color: Highlight;
+  }
+}
+
+/* Print: always parted. */
+@media print {
+  .partable .dotAfter {
+    transform: translateX(calc((var(--len) - 1) * var(--d))) !important;
+    transition: none !important;
+  }
+
+  .partable .bar {
+    clip-path: none !important;
+  }
+}

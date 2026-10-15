@@ -1,0 +1,6 @@
+{
+  "//": "Used by `npm run typecheck`. Same as tsconfig.json minus .next/dev/types (dev-only lab routes clash with build route types).",
+  "extends": "./tsconfig.json",
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "**/*.mts"],
+  "exclude": ["node_modules", ".next/dev", "out"]
+}

@@ -1,0 +1,255 @@
+/*
+ * The sum drawing (03-case-and-pages.md §7.1), on the ink field.
+ *
+ * Fit: font-size = min(display step, term column / --sum-fit), where the
+ * term column is cols 1–7 of 12 (1–5 of 8; the measure on phones) and
+ * --sum-fit is the longest line in em, operator included.
+ *
+ * The connector sits on the sum term's x-height middle (baseline − 0.5ex
+ * of the term). The outputs share the sum line's baseline, then shift up by
+ * the term's 0.5ex and down by their own 0.5ex, so the first dot's centre
+ * lands on the connector exactly, whatever the sizes.
+ */
+.sum {
+  margin: 0;
+}
+
+.drawing {
+  container-type: inline-size;
+}
+
+.row {
+  --col: calc((100cqi - (var(--columns) - 1) * var(--gutter)) / var(--columns));
+  --term-w: calc(7 * var(--col) + 6 * var(--gutter));
+  --sum-size: min(var(--step-2), calc(var(--term-w) / var(--sum-fit)));
+  display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  column-gap: var(--gutter);
+  align-items: baseline;
+}
+
+.term {
+  grid-column: 1 / 8;
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--sum-size);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-display);
+  white-space: nowrap;
+  color: var(--field-ink);
+}
+
+.op {
+  flex: none;
+  width: 0.62em;
+  color: var(--field-muted);
+}
+
+.word {
+  flex: none;
+}
+
+/* CRM: what each tool does, on its term's baseline (cols 8–12). */
+.role {
+  grid-column: 8 / 13;
+  margin: 0;
+  font-size: var(--step-0);
+  line-height: var(--leading-body);
+  color: var(--field-ink);
+}
+
+/* The sum line: a gap replaces the sum rule. */
+.total {
+  margin-top: var(--space-m);
+}
+
+.wire {
+  flex: 1 1 auto;
+  align-self: baseline;
+  height: 3px;
+  margin-left: 0.15em;
+  margin-right: calc(-1 * var(--gutter));
+  translate: 0 calc(1.5px - 0.5ex);
+  background-color: var(--field-ink);
+  transform-origin: left center;
+}
+
+.wireDown {
+  display: none;
+}
+
+.outputs {
+  grid-column: 8 / 13;
+  min-width: 0;
+  font-family: var(--font-display);
+  font-size: var(--sum-size);
+  translate: 0 calc(-0.5ex);
+}
+
+.list {
+  display: grid;
+  row-gap: var(--space-xs);
+  font-family: var(--font-text);
+  font-size: var(--step-0);
+  line-height: var(--leading-body);
+}
+
+.output {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+  translate: 0 0.5ex;
+}
+
+.dot {
+  position: relative;
+  flex: none;
+  align-self: baseline;
+  width: var(--pair-d-s);
+  height: var(--pair-d-s);
+  border-radius: 50%;
+  translate: 0 calc(var(--pair-d-s) / 2 - 0.5ex);
+  background-color: var(--field-ink);
+}
+
+/* The one output that moved the case's number takes the after colour. */
+.output[data-after] .dot {
+  background-color: var(--field-after);
+}
+
+.caption {
+  margin: var(--space-s) 0 0;
+  padding-left: calc(var(--pair-d-s) + var(--space-xs));
+  font-family: var(--font-text);
+  font-size: var(--step--1);
+  line-height: var(--leading-small);
+  color: var(--field-muted);
+}
+
+/* 600–1023: terms on cols 1–5 of 8, outputs and roles on 6–8. */
+@media (max-width: 1023px) {
+  .row {
+    --term-w: calc(5 * var(--col) + 4 * var(--gutter));
+  }
+
+  .term {
+    grid-column: 1 / 6;
+  }
+
+  .role,
+  .outputs {
+    grid-column: 6 / 9;
+  }
+}
+
+/* Phones: the terms stack at the fit size, roles under their terms, the
+   connector turns vertical (from under the sum's first letter, down to the
+   first output dot) and the outputs follow, full width. */
+@media (max-width: 599px) {
+  .row {
+    --term-w: 100cqi;
+    display: block;
+  }
+
+  /* A role hangs from its own term: on the term's first ink (past the
+     operator column), 4px under it, and a clear --space-s before the next
+     operator line, so it never reads as a label over the next term. */
+  .role {
+    margin: var(--space-3xs) 0 var(--space-s) calc(0.62 * var(--sum-size));
+    font-size: var(--step--1);
+    line-height: var(--leading-small);
+    color: var(--field-muted);
+  }
+
+  .wire {
+    display: none;
+  }
+
+  .wireDown {
+    display: block;
+    width: 3px;
+    height: calc(var(--space-m) + 0.5lh);
+    margin-bottom: calc(-0.5lh);
+    margin-left: calc(0.62 * var(--sum-size) + var(--pair-d-s) / 2 - 1.5px);
+    font-size: var(--step-0);
+    line-height: var(--leading-body);
+    background-color: var(--field-ink);
+    transform-origin: 50% 0;
+  }
+
+  .outputs {
+    translate: none;
+    padding-left: calc(0.62 * var(--sum-size));
+  }
+
+  .output {
+    translate: none;
+  }
+}
+
+/* ── Motion, once in view (html.js and no-preference only). ── */
+@media (prefers-reduced-motion: no-preference) {
+  :global(html.js) .drawing:not([data-in]) .row {
+    opacity: 0;
+    transform: translate3d(0, var(--rise), 0);
+  }
+
+  .drawing[data-in] .row {
+    transition:
+      opacity var(--dur-fade) var(--ease-out),
+      transform var(--dur-rise) var(--ease-out);
+    transition-delay: calc(var(--i) * 90ms);
+  }
+
+  :global(html.js) .drawing:not([data-in]) .wire {
+    transform: scaleX(0);
+  }
+
+  .drawing[data-in] .wire {
+    transition: transform 600ms var(--ease-in-out) calc(var(--n) * 90ms + 200ms);
+  }
+
+  :global(html.js) .drawing:not([data-in]) .output {
+    opacity: 0;
+    transform: translate3d(0, var(--rise-ui), 0);
+  }
+
+  .drawing[data-in] .output {
+    transition:
+      opacity 400ms var(--ease-out),
+      transform 400ms var(--ease-out);
+    transition-delay: calc(var(--n) * 90ms + 760ms + var(--j) * 45ms);
+  }
+
+  :global(html.js) .drawing:not([data-in]) .output[data-after] .dot {
+    opacity: 0;
+    transform: translate3d(0, -0.6em, 0);
+  }
+
+  .drawing[data-in] .output[data-after] .dot {
+    transition:
+      opacity var(--dur-drop) var(--ease-out),
+      transform var(--dur-drop) var(--ease-out);
+    transition-delay: calc(var(--n) * 90ms + 1100ms);
+  }
+
+  :global(html.js) .drawing:not([data-in]) .caption {
+    opacity: 0;
+  }
+
+  .drawing[data-in] .caption {
+    transition: opacity 400ms var(--ease-out) calc(var(--n) * 90ms + 1000ms);
+  }
+
+  :global(html.js) .drawing:not([data-in]) .wireDown {
+    transform: scaleY(0);
+  }
+
+  .drawing[data-in] .wireDown {
+    transition: transform 600ms var(--ease-in-out) calc(var(--n) * 90ms + 200ms);
+  }
+}

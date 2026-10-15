@@ -1,0 +1,255 @@
+/*
+ * The footer (ink): the curtain and the bookend (01 §7.15, §3.4, §6.5; 02 §11).
+ * The page lifts off this sticky footer. Its stack: 96px on top (64px under
+ * 1024), the monument, 64px from the m's baseline to the row (48px under
+ * 1024; the line box's empty 0.16em descent is taken back in
+ * Monument.module.css), the row, 32px. From 1024px the desktop minimum's
+ * spare goes three parts above the name and two above the row, so "Artëm"
+ * sits on its row: about 150px of ink over the A's cap and 107px from the
+ * m's foot to the row at 1440×900.
+ *
+ * The end frame (curtainFit.ts) never stretches that composition. When the
+ * last chapter's tail would be cut by the bar at this height, the extra
+ * height goes to the hem: a band in the last chapter's own colour on top of
+ * the footer, which reads as the close's own bottom margin. Never between
+ * the name and the row, never over the name: a deeper landing spot would
+ * lengthen the dots' visible fall, and on a phone their first frame would
+ * show most of the disc.
+ *
+ * Never taller than 100svh: where the stack cannot fit under the curtain,
+ * the footer stops being sticky instead of shrinking the name.
+ */
+
+/* The desktop minimum as a length the curtain script can read (Curtain.tsx). */
+@property --curtain-min {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+.root {
+  /* One line box of the row. 28px: the keyboard ring around a link's words
+     (2px at a 2px offset) stays inside its own line box, clear of the line
+     below by 6px or more. */
+  --row-line: calc(var(--space-m) + var(--space-3xs));
+  /* Between the two rows of cells (two by two): about twice the space
+     between a cell's own lines, so each cell reads as one pair. */
+  --row-pair: var(--space-m);
+  --curtain-min: 0px;
+  /* Read by curtainFit.ts: the clear field it keeps under the bar. */
+  --fit-clear: var(--space-s);
+  position: sticky;
+  bottom: 0;
+  z-index: var(--z-footer);
+  display: flex;
+  flex-direction: column;
+  /* --curtain-cap (curtainFit.ts): the stack plus at most 112px of spare. */
+  min-height: calc(min(var(--curtain-min), var(--curtain-cap, 100vh)) + var(--hem, 0px));
+  max-height: 100svh;
+  overflow: clip;
+  border-top: var(--hem, 0px) solid var(--hem-color, transparent);
+  padding-top: var(--space-2xl);
+  padding-bottom: var(--space-l);
+}
+
+/* Three parts of the desktop spare above the name; the row's box takes two.
+   Under 1024px there is no minimum, so no spare. */
+.root::before {
+  content: "";
+  flex: 3 1 0;
+}
+
+/* Short pages (the 404): in flow, so the fold cuts the footer, not
+   <main>'s edge; no curtain, so no minimum height either: the name follows
+   the page at once and its cap band lands in the first viewport. */
+.root.inFlow {
+  --curtain-min: 0px;
+  position: static;
+}
+
+/*
+ * Keyboard focus is never left under the curtain (WCAG 2.2, 2.4.11): while a
+ * link in the footer has keyboard focus the footer is in flow, at the end of
+ * the page where the curtain leaves it anyway, so the browser scrolls the
+ * focused link into view. A pointer press never matches :focus-visible on a
+ * link, so the curtain does not jump under a click.
+ */
+.root:has(:focus-visible) {
+  position: static;
+}
+
+.name {
+  flex: none;
+  margin-bottom: var(--space-xl);
+}
+
+/* The joins (A 0.025em, r 0.055em) and the size divisor 2.6639 that keeps
+   the m's 0.05em crop live in Monument.module.css, shared with the hero. */
+
+/*
+ * The homecoming (01 §6.5): 560ms out, the right dot 60ms after the left.
+ * Each dot waits wholly above the ink's top edge (--drop-from, measured by
+ * MonumentHomecoming: the landing spot's depth under that edge, plus one
+ * dot), where the footer's own clip hides it; never less than the spec's
+ * 0.5em. The edge is the highest the curtain's line can ever reach, so on
+ * every width each dot falls out from under the orange edge, cut by it, and
+ * never appears in mid-air. It switches on at once (a disc half faded over
+ * ink reads rust brown), both dots together while still hidden; only the
+ * fall is staggered.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  :global(html.js) .name[data-monument]:not([data-home]) [data-monument-dot] {
+    transform: translate3d(0, calc(-1 * max(0.5em, var(--drop-from, 0.5em))), 0);
+  }
+
+  :global(html.js) .name[data-home] [data-monument-dot] {
+    transition:
+      opacity 0ms linear,
+      transform var(--dur-drop) var(--ease-out);
+  }
+
+  :global(html.js) .name[data-home] [data-monument-dot="r"] {
+    transition-delay: 0ms, var(--stagger-dots);
+  }
+}
+
+/*
+ * The row: the name, the languages and the links in paper; the role, the
+ * one second line that is not a link, muted. Every line is one line box, so
+ * the second lines share a baseline across the cells; each link is inline
+ * in its line, so its ring and its hit area follow its words. The cells sit
+ * at the foot of the row's box, which takes the lower part of the spare.
+ */
+.row {
+  display: grid;
+  flex: 2 0 auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: end;
+  column-gap: var(--gutter);
+  row-gap: var(--row-pair);
+  padding-inline: var(--margin);
+  font-size: var(--step--1);
+  line-height: var(--row-line);
+}
+
+.cell {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  font-style: normal; /* the <address> cell */
+}
+
+.line {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+}
+
+.link {
+  --focus-offset: 2px;
+  position: relative;
+}
+
+.muted {
+  color: var(--field-muted);
+}
+
+/* The comma after the name, for the ear only: "Artem Serebryannikov,
+   Product Owner, Paris". Plain inline text at the end of its line, simply
+   not painted: a hidden box with negative margins makes the line's
+   max-content 1px short of its words, and the name wraps. */
+.ear {
+  opacity: 0;
+}
+
+@media (min-width: 1024px) {
+  .root {
+    --curtain-min: calc(100svh - var(--bar) - var(--section-gap) + var(--space-2xs));
+    --fit-clear: var(--space-m);
+    padding-top: var(--space-3xl);
+  }
+
+  .root.inFlow {
+    --curtain-min: 0px;
+  }
+
+  .name {
+    margin-bottom: var(--space-2xl);
+  }
+
+  .row {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/*
+ * From 1280px the row is set in the body step, so the contact links hold
+ * the foot of a 470–700px name instead of reading as fine print (01 §3.2:
+ * one of the five sizes). Its line box takes the body leading, which keeps
+ * a focused link's ring 6px clear of the line below.
+ */
+@media (min-width: 1280px) {
+  .root {
+    --row-line: calc(var(--step-0) * var(--leading-body));
+  }
+
+  .row {
+    font-size: var(--step-0);
+  }
+}
+
+/*
+ * Touch (WCAG 2.5.8): each link's hit area is its whole line box, 28px
+ * tall, as wide as its words. Lines of a cell sit on that pitch with no
+ * gap, so the two lines of a pair read as one, and pairs part by 24px.
+ */
+@media (pointer: coarse) {
+  .link::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: 50%;
+    height: var(--row-line);
+    translate: 0 -50%;
+  }
+}
+
+/* Two by two: the languages (the one single-line cell) may run into the
+   right margin rather than leave "Russian" alone on a second line at
+   360px. */
+@media (max-width: 1023.98px) {
+  .languages {
+    margin-inline-end: calc(-1 * var(--margin));
+  }
+}
+
+/*
+ * Where the stack cannot fit under the curtain, the footer is static: the
+ * name keeps its size and scrolls in. From 1024px the stack needs at most
+ * 272px + 0.64 × the monument (96 + baseline + 64 + a 60px row + 32, plus
+ * room to spare); each band uses the ratio at its narrowest width, so it
+ * errs toward static. Under 1024 it needs at most 288px + 0.64 × the
+ * monument (64 + baseline + 48 + a 136px row of two by two + 32): under
+ * 520px below 768, 528px below 1024.
+ */
+@media (max-height: 520px),
+  (768px <= width < 1024px) and (max-height: 528px),
+  (1024px <= width < 1280px) and (min-aspect-ratio: 2000/1000),
+  (1280px <= width < 1536px) and (min-aspect-ratio: 2236/1000),
+  (1536px <= width < 1792px) and (min-aspect-ratio: 2425/1000),
+  (1792px <= width < 2048px) and (min-aspect-ratio: 2579/1000),
+  (2048px <= width < 2560px) and (min-aspect-ratio: 2707/1000),
+  (width >= 2560px) and (min-aspect-ratio: 2911/1000) {
+  .root {
+    position: static;
+    max-height: none;
+  }
+}
+
+/* On paper the close prints white: the hem that continued it goes too. */
+@media print {
+  .root {
+    border-top: 0;
+  }
+}

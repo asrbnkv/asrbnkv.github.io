@@ -1,0 +1,109 @@
+/*
+ * Context names (03 §3.1) and the users' story cards (03 §3.2).
+ */
+
+/* ── Names under the H2: statement step, two columns, the note in Small under each. ── */
+.names {
+  margin-top: var(--space-2xl);
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  row-gap: var(--space-l);
+}
+
+.item {
+  display: grid;
+  align-content: start;
+}
+
+.name {
+  text-box: trim-both cap alphabetic;
+}
+
+.note {
+  margin-top: var(--space-xs);
+  max-width: 28ch;
+}
+
+.caption {
+  margin-top: var(--space-xl);
+  color: var(--field-ink);
+}
+
+@media (max-width: 599px) {
+  .names {
+    margin-top: var(--space-xl);
+  }
+
+  .list {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--space-m);
+  }
+}
+
+/* ── Users: the H2, then two cards staggered (a stagger, not a row). ── */
+.cards {
+  margin-top: var(--space-2xl);
+  row-gap: var(--space-2xl);
+}
+
+.card {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+@media (min-width: 600px) and (max-width: 1099px) {
+  .card {
+    grid-column: 1 / 8;
+  }
+
+  .card:nth-child(2) {
+    grid-column: 2 / 9;
+  }
+}
+
+@media (min-width: 1100px) {
+  .card:nth-child(1) {
+    grid-column: 1 / 7;
+    grid-row: 1;
+  }
+
+  .card:nth-child(2) {
+    grid-column: 8 / 13;
+    grid-row: 1;
+    margin-top: var(--space-3xl);
+  }
+}
+
+@media (max-width: 599px) {
+  .cards {
+    margin-top: var(--space-xl);
+    row-gap: var(--space-xl);
+  }
+}
+
+/* ── Entrances (03 §9.3): H2, lead, body; then the names row by row (45ms)
+   after the text they illustrate, then their caption. On a phone this
+   chapter can be in view at load: its entrance then holds until the
+   cover's beat is done (html[data-beat-done], set by the case page), so
+   the first second belongs to the cover. ── */
+@media (prefers-reduced-motion: no-preference) {
+  :global(html.js:not([data-beat-done])) .context {
+    --hold: 600ms;
+  }
+
+  :global(html.js) [data-reveal-root].context [data-reveal]:global(.is-revealing) {
+    transition-delay: calc(var(--reveal-delay, 0ms) + var(--hold, 0ms));
+  }
+
+  :global(html.js) .list[data-reveal-root] > li[data-reveal]:global(.is-revealing) {
+    transition-delay: calc(var(--reveal-delay, 0ms) + var(--hold, 0ms) + 210ms + var(--n, 0) * 45ms);
+  }
+
+  :global(html.js) [data-reveal-root] .caption[data-reveal]:global(.is-revealing) {
+    transition-delay: calc(var(--reveal-delay, 0ms) + var(--hold, 0ms) + 480ms);
+  }
+}

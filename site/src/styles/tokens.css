@@ -1,0 +1,271 @@
+/*
+ * Tréma design tokens (.aaa/brief/design-spec/01-system.md §13).
+ * Every other file consumes these through var(--...): no raw hex, px type
+ * sizes or curves in modules.
+ *
+ * Contract names from the scaffold stay valid (they alias the Tréma roles):
+ *   colour   --ground --ink --ink-muted --accent --on-accent --surface-1 --surface-2
+ *   type     --font-display --font-text --step--1..--step-2 --step-display
+ *            --leading-tight --leading-body --tracking-display --measure
+ *   space    --gutter --space-3xs..--space-3xl --section-gap --list-gap --item-trailer --max-width
+ *   motion   --ease-out --ease-in-out --ease-drawer --dur-press --dur-ui --dur-reveal
+ *            --press-scale --stagger
+ *   misc     --radius --focus-ring --focus-offset
+ */
+:root {
+  color-scheme: light;
+
+  /* ── Colour (§2.1). One ground, one ink, one accent. ───────────────── */
+  --paper: #f3f3f0;
+  --stone: #e3e3de;
+  --ink: #0e0f0f;
+  --orange: #f24a00;
+  --orange-hover: #ff5c17;
+  --muted: #5d5f5c; /* secondary text on paper/stone: 5.80 / 5.01:1 */
+  --muted-on-ink: #9a9b97; /* secondary text on ink: 6.86:1 */
+  --band: #6e706c; /* graphics only: the "before" dot, the forecast capsule */
+  --ink-step: #1e1f1f; /* state only: pressed ink buttons, preview frame on ink */
+
+  /* Scaffold aliases */
+  --ground: var(--paper);
+  --surface-1: var(--stone);
+  --surface-2: var(--ink);
+  --ink-muted: var(--muted);
+  --accent: var(--orange);
+  --on-accent: var(--ink);
+
+  /* ── Type (§3). Faces come from fonts.ts (CSS variables on <html>). ── */
+  --font-display: var(--font-display-face, "Helvetica Neue", Arial, sans-serif);
+  --font-text: var(--font-text-face, "Helvetica Neue", Arial, sans-serif);
+
+  --step--1: 0.9375rem; /* small 15 */
+  --step-0: clamp(1.0625rem, 1rem + 0.22vw, 1.1875rem); /* body 17–19 */
+  --step-1: clamp(1.375rem, 1.1rem + 1.05vw, 2rem); /* statement 22–32 */
+  --step-2: clamp(2.625rem, 1.37rem + 5.14vw, 6rem); /* display 42–96 */
+  --step-display: clamp(7.5rem, 30vw, 30rem); /* giant figures 120–480, then the fit rule */
+  /* The monument (01 §3.3–3.4): width-bound at every viewport, so the m's
+     last stem always crosses the right edge by 0.05em (27px at 1440, 36px at
+     1920, 7px at 390). Never under 4.5rem. Use only inside an inline-size
+     container (cqi): the Monument component is its own container. On a
+     short viewport the hero's statement and CTA row fall below the fold and
+     the bar's Email me (the hand-off, §7.2) carries the action on the first
+     screen. The footer keeps the same size (the bookend); where its stack
+     cannot fit under the curtain it stops being sticky rather than shrink
+     (Footer.module.css).
+     2.6224 = the word's ink right edge at the opened joins (2.6724em, measured
+     in Chromium) minus the 0.05em crop of the m. */
+  --step-monument: max(4.5rem, calc((100cqi - var(--margin)) / 2.6224));
+  --step-ui: 1.0625rem; /* buttons, bar links: Figtree 600 at the body minimum */
+
+  --leading-giant: 0.8;
+  --leading-tight: 0.95;
+  --leading-statement: 1.18;
+  --leading-body: 1.55;
+  --leading-small: 1.45;
+  --leading-ui: 1;
+
+  --tracking-giant: -0.04em;
+  --tracking-display: -0.03em;
+  --tracking-statement: -0.01em;
+  --tracking-ink-body: 0.01em; /* light text on ink reads heavier */
+
+  --weight-statement: 500;
+  --weight-display: 700;
+  --weight-giant: 800;
+  --weight-body: 400;
+  --weight-small-em: 500;
+  --weight-ui: 600;
+
+  --measure: 62ch;
+
+  /* ── Space, grid (§4). ─────────────────────────────────────────────── */
+  --margin: clamp(16px, 10px + 1.524vw, 32px);
+  --gutter: clamp(12px, 7.5px + 1.15vw, 24px);
+  --columns: 12;
+  --space-3xs: 4px;
+  --space-2xs: 8px;
+  --space-xs: 12px;
+  --space-s: 16px;
+  --space-m: 24px;
+  --space-l: 32px;
+  --space-xl: 48px;
+  --space-2xl: 64px;
+  --space-3xl: 96px;
+  --space-4xl: 128px;
+  --section-gap: clamp(96px, 11vw, 168px);
+  /* Lists of display-step items (the proof scenes' figures, the work
+     index, the retro): the gap BETWEEN items is at least twice the gap
+     inside one, and an item's Small trailer ("Read the case", the years)
+     sits within --item-trailer of its own item, so it never reads as the
+     label of the next one. */
+  --list-gap: var(--space-2xl);
+  --item-trailer: var(--space-xs);
+  --max-width: none;
+  --bar: 64px;
+
+  /* ── Shape and layers (§4.3, §4.5). ────────────────────────────────── */
+  --radius: 0;
+  --radius-ui: 14px; /* only a real interface fragment (data-ui), e.g. the AppBazar phone screen */
+  --z-footer: 0;
+  --z-main: 1;
+  --z-stage: 2;
+  --z-flight: 30;
+  --z-bar: 40;
+  --z-menu: 50;
+  --z-skip: 100;
+
+  /* ── Controls (§7.4). ──────────────────────────────────────────────── */
+  --btn-height: 56px;
+  --btn-pad: 28px;
+  --bar-btn-height: 40px;
+  --bar-btn-pad: 18px;
+  --target-min: 44px;
+  --underline-thickness: 0.07em;
+  --underline-offset: 0.2em;
+  --underline-rest: 40%; /* underline colour at rest: currentColor at 40% */
+
+  /* ── The pair (§7.6): dot diameter d per size; bar = 0.25d; tréma gap 0.27d.
+     Desktop values here, phone values below 600px. ───────────────────── */
+  --pair-d-s: 16px;
+  --pair-d-m: 28px;
+  --pair-d-l: 44px;
+  /* The pair's run (01 §7.6): one dot, 0.25d across, centred in each 0.5d
+     tile; used as a mask over the after colour, tiles spaced to fit whole. */
+  --dot-run: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 1'%3E%3Ccircle cx='1' cy='.5' r='.5'/%3E%3C/svg%3E");
+  --trema-gap: 0.27; /* gap between the two dots, in dot diameters */
+
+  /* ── Motion (§5.1). ────────────────────────────────────────────────── */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-hover: ease;
+  --dur-press: 140ms;
+  --dur-hover: 180ms;
+  --dur-ui: 240ms;
+  --dur-exit: 180ms; /* exits run ~70% of their entrance */
+  --dur-panel: 320ms;
+  --dur-clip: 360ms;
+  --dur-drop: 560ms;
+  --dur-fade: 700ms;
+  --dur-rise: 900ms;
+  --dur-reveal: 900ms;
+  --dur-part: 1000ms;
+  --dur-settle: 1200ms;
+  --stagger: 70ms;
+  --stagger-ui: 45ms;
+  --stagger-letter: 30ms;
+  --stagger-dots: 60ms;
+  --rise: 24px;
+  --rise-hero: 28px;
+  --rise-ui: 8px;
+  /* a dot that arrives (the month in dots, the route): 6px (01 §7.11) */
+  --rise-dot: 6px;
+  --press-scale: 0.97;
+  --press-scale-row: 0.985;
+  --settle-from: 0.94;
+  --stage-from: 0.92;
+
+  /* ── Focus (colour set per data-field below). ─────────────────────── */
+  --focus-offset: 3px;
+}
+
+@media (max-width: 1023px) {
+  :root {
+    --columns: 8;
+  }
+}
+
+@media (max-width: 599px) {
+  :root {
+    --columns: 4;
+    --bar: 56px;
+    --list-gap: var(--space-xl);
+    --bar-btn-height: 36px;
+    --bar-btn-pad: 14px;
+    --pair-d-s: 12px;
+    --pair-d-m: 20px;
+    --pair-d-l: 32px;
+  }
+}
+
+/*
+ * Fields (§2.2). Every chapter is <section data-field="paper|stone|ink|orange">.
+ * The attribute sets that field's tokens, so components never ask which field
+ * they sit on. :root is a paper field.
+ */
+:root,
+[data-field="paper"] {
+  --field-bg: var(--paper);
+  --field-ink: var(--ink);
+  --field-muted: var(--muted);
+  --field-before: var(--band);
+  --field-after: var(--orange);
+  --focus-color: var(--ink);
+  --btn-bg: var(--orange);
+  --btn-ink: var(--ink);
+  --btn-bg-hover: var(--orange-hover);
+  --selection-bg: var(--orange);
+  --selection-ink: var(--ink);
+  --caret: var(--orange);
+  --theme-color: #f3f3f0;
+  --placeholder-alpha: 0.6;
+}
+
+[data-field="stone"] {
+  --field-bg: var(--stone);
+  --field-ink: var(--ink);
+  --field-muted: var(--muted);
+  --field-before: var(--band);
+  --field-after: var(--orange); /* never drawn on stone: charts sit in a paper panel */
+  --focus-color: var(--ink);
+  --btn-bg: var(--orange);
+  --btn-ink: var(--ink);
+  --btn-bg-hover: var(--orange-hover);
+  --selection-bg: var(--orange);
+  --selection-ink: var(--ink);
+  --caret: var(--orange);
+  --theme-color: #e3e3de;
+  --placeholder-alpha: 0.6;
+}
+
+[data-field="ink"] {
+  --field-bg: var(--ink);
+  --field-ink: var(--paper);
+  --field-muted: var(--muted-on-ink);
+  --field-before: var(--band);
+  --field-after: var(--orange);
+  --focus-color: var(--paper);
+  --btn-bg: var(--orange);
+  --btn-ink: var(--ink);
+  --btn-bg-hover: var(--orange-hover);
+  --selection-bg: var(--orange);
+  --selection-ink: var(--ink);
+  --caret: var(--orange);
+  --theme-color: #0e0f0f;
+  --placeholder-alpha: 0.6;
+}
+
+[data-field="orange"] {
+  --field-bg: var(--orange);
+  --field-ink: var(--ink);
+  --field-muted: var(--ink);
+  --field-before: var(--ink);
+  --field-after: var(--ink);
+  --focus-color: var(--ink);
+  --btn-bg: var(--ink);
+  --btn-ink: var(--paper);
+  --btn-bg-hover: var(--ink-step);
+  --selection-bg: var(--ink);
+  --selection-ink: var(--paper);
+  --caret: var(--ink);
+  --theme-color: #f24a00;
+  /* ink placeholders at 86% on orange: 4.62:1 (60% would be 3.04:1) */
+  --placeholder-alpha: 0.86;
+}
+
+/* Declared per field so var(--focus-color) resolves on the field itself
+   (a custom property resolves its var() where it is declared). */
+:root,
+[data-field] {
+  --focus-ring: 2px solid var(--focus-color);
+}

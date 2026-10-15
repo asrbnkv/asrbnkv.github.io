@@ -1,0 +1,76 @@
+/*
+ * The home's social card, 1200×630 (03 §13): "Artëm / Product Owner" on
+ * paper, a closed object (no bleed). The ë's dots are orange, as they come
+ * home in the footer, so the card is known in a feed at thumbnail size; the
+ * hero's one number (DAU ×1 → ×2, the type-set pair with its orange after
+ * dot) closes it. Type stays 64px inside the edges; nothing essential
+ * within 40px of the top or bottom (X crops 2:1). Geometry from the
+ * measured font: the monument fits (1200 − 128) / 2.6224 ≈ 409px, cap top
+ * y≈72.
+ */
+.card {
+  --margin: 64px;
+  --step-monument: 409px;
+  --monument-dot: var(--orange);
+  position: relative;
+  width: 1200px;
+  height: 630px;
+  overflow: hidden;
+  background-color: var(--paper);
+  color: var(--ink);
+}
+
+/* Line box top = cap top + 0.02em (leading 0.8; ascent 0.70em). Baseline at 80 + 0.64 × 411 = 343. */
+.monument {
+  position: absolute;
+  top: 80px;
+  left: 0;
+  width: 1200px;
+}
+
+/* Role baseline 427 (monument baseline + 20 + the 64px bust). */
+.role {
+  position: absolute;
+  left: 64px;
+  top: calc(427px - 0.715 * 72px);
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: 72px;
+  line-height: 0.95;
+  letter-spacing: var(--tracking-display);
+  white-space: nowrap;
+}
+
+.bust {
+  position: absolute;
+  left: calc(64px + 6.37 * 72px);
+  top: calc(427px - 64px);
+}
+
+/* Facts, then the proof, standing on the 64px bottom margin. */
+.foot {
+  position: absolute;
+  left: 64px;
+  right: 64px;
+  bottom: 64px;
+  display: grid;
+  gap: 14px;
+  font-family: var(--font-text);
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.line {
+  font-weight: var(--weight-small-em);
+}
+
+.proof {
+  --pair-d-m: 22px;
+  font-weight: var(--weight-ui);
+}
+
+/* The hero's pair in miniature, on the text's x-height middle. */
+.mark {
+  margin-inline: 14px;
+  vertical-align: calc(0.25em - 11px);
+}

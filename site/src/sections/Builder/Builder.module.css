@@ -1,0 +1,540 @@
+/*
+ * builder (02-home.md §5): stone, one full-bleed ink stage band with hard
+ * cuts (01 §8.1), stone again. Mobile first: 4 columns, then 8 (600px),
+ * then 12 (1024px). Token values only.
+ *
+ * The section carries no inline padding, so the stage runs edge to edge;
+ * the intro and the facts set their own margins on the one grid.
+ *
+ * The stage from 1024px is two rows on one spine: row 1 holds the roadmap
+ * (L) and the one-click block, whose first line sits on the screen's top
+ * edge; row 2 starts on the screen's bottom edge, where the AI menu (S)
+ * steps across the spine corner to corner with it, and the New application
+ * strip (M) hangs under the roadmap, its right edge on the spine and its
+ * bottom on S's. The three screens print their interface at one size
+ * (about 10–11px cap height at 1440). Reading order is the DOM order at
+ * every width: L, the block, S, M.
+ *
+ * Every hidden state below lives under :global(html.js) and no-preference,
+ * and tests the shared reveal classes as attributes ([class~="is-in"]), so
+ * the module never hashes them.
+ */
+.root {
+  position: relative;
+}
+
+.intro,
+.facts {
+  display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  column-gap: var(--gutter);
+  padding-inline: var(--margin);
+}
+
+/* ── Stone: the title and the statement ─────────────────────────────── */
+.intro {
+  padding-top: var(--section-gap);
+  padding-bottom: var(--space-2xl);
+}
+
+.title {
+  grid-column: 1 / -1;
+}
+
+/* The authored break: "When no tool fits," / "I build one". Each line rises
+   on its own, 70ms apart, so the heading arrives in reading order. */
+.line {
+  display: block;
+}
+
+.statement {
+  grid-column: 1 / -1;
+  margin-top: var(--space-m);
+}
+
+/* ── Ink: the stage band ─────────────────────────────────────────────── */
+.root .band {
+  display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  column-gap: var(--gutter);
+  align-items: start;
+  padding-block: var(--space-3xl);
+}
+
+/* Phone (02 §5.2, with the critic's swap): the roadmap crop edge to edge,
+   its caption on the margin; the one-click block; the AI menu (S) on the
+   measure, where its menu reads at about 14px; then the one-click strip of
+   the form (M), edge to edge like the roadmap, its caption on the margin. */
+.band .plateL {
+  grid-column: 1 / -1;
+}
+
+.band .oneClick {
+  grid-column: 1 / -1;
+  margin-top: var(--space-xl);
+}
+
+.band .plateS {
+  grid-column: 1 / -1;
+  margin-top: var(--space-2xl);
+}
+
+.band .plateM {
+  grid-column: 1 / -1;
+  margin-top: var(--space-xl);
+}
+
+/* Two balanced lines when the roadmap's caption wraps. */
+.band .plateL figcaption {
+  text-wrap: balance;
+}
+
+@media (max-width: 599.98px) {
+  .band .plateL img,
+  .band .plateM img {
+    width: calc(100% + 2 * var(--margin));
+    max-width: none;
+    margin-inline: calc(-1 * var(--margin));
+  }
+}
+
+/*
+ * Origins (Emil: a surface opens from its trigger). Both small screens
+ * settle from the control that calls the AI: S, the AI menu, from its AI
+ * button (69%, 12% of the figure: the menu drops from it); M, the New
+ * application strip, from its Auto-fill button (88%, half its height).
+ * Both keep the shared settle: 0.94, 1200ms, out.
+ */
+.band .plateS {
+  transform-origin: 69% 12%;
+}
+
+.band .plateM {
+  transform-origin: 88% 50%;
+}
+
+/*
+ * L, the roadmap: the shared stage scale (Stage's `.l img`, 0.92 → 1 over
+ * entry 0% → cover 35%, the screen only, so the caption never scales) with
+ * two refinements. The screen decelerates into its slot (ease-out on the
+ * scroll progress; linear stays for pans), and it grows from the edge its
+ * words hang on: the top centre on phones and tablets (even margins), the
+ * top-left corner from 1024px, where the one-click line sits on its top
+ * edge. An anchor landing (#builder) rests at scale 1.
+ */
+.band .plateL {
+  --stage-origin: 50% 0;
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .band .plateL img {
+      animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+    }
+
+    .root:target .band .plateL img {
+      animation: none;
+    }
+  }
+}
+
+/*
+ * The light-up is the roadmap's own: once its part is released (the
+ * chapter's one trigger for the screen and its words) and its picture is
+ * decoded (data-ready, RoadmapPlate.tsx), the screen draws in along its
+ * time axis, row labels first, then Month 1 to the Launch flag: a shutter
+ * of the stage's own ink, anchored on the right edge, folds away (scaleX,
+ * 1200ms out: most of the plan is there within a quarter of a second, and
+ * the launch lands last). A shutter, not a clip on the image, so the lazy
+ * image still loads while it waits. The figure's shared fade gives way to
+ * it, and the caption fades in behind the edge. Reduced motion, no JS and
+ * print: the screen at rest.
+ */
+.band .plateL picture {
+  display: block;
+  position: relative;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :global(html.js) [data-reveal-root] .band .plateL[data-reveal]:not([class~="is-in"]) {
+    opacity: 1;
+  }
+
+  :global(html.js) .band .plateL picture::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--ink);
+    transform-origin: 100% 50%;
+    transform: scaleX(0);
+    transition: transform var(--dur-settle) var(--ease-out);
+    transition-delay: var(--reveal-delay, 0ms);
+    pointer-events: none;
+  }
+
+  :global(html.js) .band .plateL figcaption {
+    transition: opacity var(--dur-fade) var(--ease-out);
+    transition-delay: calc(var(--reveal-delay, 0ms) + 2 * var(--stagger));
+  }
+
+  :global(html.js) .band .plateL:not([class~="is-in"][data-ready]) picture::after {
+    transform: none;
+  }
+
+  :global(html.js) .band .plateL:not([class~="is-in"][data-ready]) figcaption {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) and (max-width: 599.98px) {
+  /* The phone crop runs edge to edge: so does its shutter. */
+  :global(html.js) .band .plateL picture::after {
+    inset: 0 calc(-1 * var(--margin));
+  }
+}
+
+@media print {
+  .band .plateL picture::after {
+    display: none;
+  }
+
+  /* Parts that hang on another trigger print at rest, like every
+     data-reveal part (globals). */
+  .band .plateL figcaption,
+  .band .oneClick > *,
+  .facts > .fact > * {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ── The one-click block: the screen's companion panel ──────────────── */
+.oneClickLine {
+  /* Trim the first line to its cap height, so the words start exactly on
+     the plate's top edge (no-op where text-box is not supported). */
+  text-box: trim-start cap alphabetic;
+}
+
+/* The authored break, as in the heading: one line each. */
+.oneClickPart {
+  display: block;
+}
+
+/* French body text hyphenates by default (globals); these short texts
+   read as statements and keep whole words. */
+.oneClickBody,
+.next,
+.factText {
+  hyphens: manual;
+}
+
+.oneClickBody {
+  margin-top: var(--space-m);
+  /* No orphan ("you apply.") on the last line. */
+  text-wrap: pretty;
+}
+
+/* What comes next, then the way into the case: a step more air than
+   inside the description, so the block reads line, body, then its two
+   trailers. */
+.next {
+  margin-top: var(--space-l);
+  max-width: 44ch;
+  text-wrap: balance;
+}
+
+.readCase {
+  margin-top: var(--space-l);
+}
+
+/* Links: the global underline (40% → 100% on hover, press dims to 0.7),
+   on a 44px target. The negative block margins give back the target's
+   extra height, so the visible rhythm is the line's own. */
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target-min);
+  margin-block: calc((1lh - var(--target-min)) / 2);
+}
+
+.oneClick > :nth-child(2) {
+  --part: 1;
+}
+
+.oneClick > :nth-child(3) {
+  --part: 2;
+}
+
+.oneClick > :nth-child(4) {
+  --part: 3;
+}
+
+/*
+ * The block hangs on its screen's trigger (one trigger for the pair): it
+ * has no observer of its own. Once the roadmap's part is released and its
+ * picture decoded, the block's four parts rise 8px with opacity, 45ms
+ * apart, after four chapter steps (280ms, when the shutter has opened on
+ * most of the plan, even after a cascade's own delay): the lit screen
+ * first, then its words. Focus inside shows them at once.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  :global(html.js) .band .oneClick > * {
+    transition:
+      opacity var(--dur-fade) var(--ease-out),
+      transform var(--dur-rise) var(--ease-out);
+    transition-delay: calc(4 * var(--stagger) + var(--part, 0) * var(--stagger-ui));
+  }
+
+  :global(html.js) .band:has(> .plateL:not([class~="is-in"][data-ready])) .oneClick > * {
+    opacity: 0;
+    transform: translate3d(0, var(--rise-ui), 0);
+  }
+
+  :global(html.js) .band .oneClick:focus-within > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── Stone: the two poster facts ────────────────────────────────────── */
+/* Phone: each fact stacked (the value at 42px, its text under it at
+   17px); the one link closes the pair. From 600px: the value on columns
+   1–2, its sentence beside it with the sentence's last baseline on the
+   value's baseline, both facts on one left edge, 64px apart. */
+.facts {
+  row-gap: var(--space-xl);
+  padding-top: var(--space-3xl);
+  padding-bottom: var(--section-gap);
+}
+
+.fact {
+  grid-column: 1 / -1;
+}
+
+.value {
+  display: block;
+  font-variant-numeric: lining-nums;
+}
+
+.factText {
+  display: block;
+  margin-top: var(--space-xs);
+  /* A poster sentence: lines of one length, never a short last line. */
+  text-wrap: balance;
+  --beat: 1;
+}
+
+.factsMore {
+  grid-column: 1 / -1;
+  /* The trailer of the pair: closer to it than the facts are to each
+     other (48 against 64 from 600px). */
+  margin-top: calc(var(--space-l) - var(--space-xl));
+}
+
+/*
+ * Each fact rises as a staircase on its own trigger (the fact, measured
+ * untransformed): the value rises 24px, its text one chapter step (70ms)
+ * later. The fact's own entrance is neutralised; only its parts move. The
+ * link, the pair's trailer, comes one more step after its own trigger.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  :global(html.js) [data-reveal-root] .facts > .fact[data-reveal]:not([class~="is-in"]) {
+    opacity: 1;
+    transform: none;
+  }
+
+  :global(html.js) .facts > .fact > * {
+    transition:
+      opacity var(--dur-fade) var(--ease-out),
+      transform var(--dur-rise) var(--ease-out);
+    transition-delay: calc(var(--reveal-delay, 0ms) + var(--beat, 0) * var(--stagger));
+  }
+
+  :global(html.js) .facts > .fact:not([class~="is-in"]) > * {
+    opacity: 0;
+    transform: translate3d(0, var(--rise), 0);
+  }
+
+  :global(html.js) .facts > .fact:focus-within > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  :global(html.js) [data-reveal-root] .facts > .factsMore[data-reveal][class~="is-revealing"] {
+    transition-delay: calc(var(--reveal-delay, 0ms) + var(--stagger));
+  }
+}
+
+/* ── 8 columns (600–1023px) ──────────────────────────────────────────── */
+@media (min-width: 600px) {
+  /* The roadmap crop on the measure, never upscaled (748px native). Under
+     it, as on the desktop stage, the block beside a screen: the block on
+     5 columns and the AI menu (S) on the last 3, its top on the line's cap
+     height; then the form strip (M) on the whole measure, like the roadmap
+     above it. */
+  .band .plateL {
+    max-width: 748px;
+  }
+
+  .band .oneClick {
+    grid-column: 1 / span 5;
+    margin-top: var(--space-2xl);
+  }
+
+  .band .plateS {
+    grid-column: 6 / span 3;
+    margin-top: var(--space-2xl);
+  }
+
+  .band .plateM {
+    grid-column: 1 / -1;
+    margin-top: var(--space-2xl);
+  }
+
+  .facts {
+    row-gap: var(--space-2xl);
+  }
+
+  /* One sentence on the subgrid: value on 1–2, text on the next 5
+     columns, their last baselines shared. */
+  .fact {
+    grid-column: 1 / span 7;
+    display: grid;
+    grid-template-columns: subgrid;
+    align-items: last baseline;
+  }
+
+  .value {
+    grid-column: 1 / span 2;
+  }
+
+  .factText {
+    grid-column: 3 / -1;
+    margin-top: 0;
+  }
+
+  .factsMore {
+    grid-column: 3 / span 5;
+    margin-top: calc(var(--space-xl) - var(--space-2xl));
+  }
+}
+
+/* ── 12 columns (1024px and up) ─────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .intro {
+    padding-bottom: var(--space-3xl);
+  }
+
+  .title {
+    grid-column: 1 / span 8;
+  }
+
+  .statement {
+    grid-column: 1 / span 7;
+  }
+
+  /*
+   * Two rows on one spine: row 1 holds the screen and the block (the
+   * block's first line on the screen's top edge); row 2 starts on the
+   * screen's bottom edge (the figure is a row subgrid, so its caption sits
+   * in row 2). S takes the right column from that edge, corner to corner
+   * with the screen across the spine; M hangs under the screen and ends on
+   * S's bottom edge, so the two captions share a line.
+   */
+  .root .band {
+    grid-template-rows: auto auto;
+    padding-block: var(--space-4xl);
+  }
+
+  .band .plateL {
+    --stage-origin: 0 0;
+    grid-column: 1 / span 6;
+    grid-row: 1 / span 2;
+    display: grid;
+    grid-template-rows: subgrid;
+    align-items: start;
+    max-width: none;
+  }
+
+  .band .oneClick {
+    grid-column: 7 / span 6;
+    grid-row: 1;
+    margin-top: 0;
+  }
+
+  .band .plateS {
+    grid-column: 7 / span 4;
+    grid-row: 2;
+    margin-top: 0;
+  }
+
+  .band .plateM {
+    grid-column: 1 / span 6;
+    grid-row: 2;
+    align-self: end;
+    margin-top: 0;
+  }
+
+  .facts {
+    padding-top: var(--space-4xl);
+  }
+
+  .fact {
+    grid-column: 1 / span 8;
+  }
+
+  .factsMore {
+    grid-column: 3 / span 6;
+  }
+}
+
+/*
+ * 1280 and up: the whole roadmap on columns 1–8 (909px at 1440, its
+ * labels at 11px and more), the block on 9–12, the AI menu on 9–11 from
+ * the roadmap's bottom edge, and the form strip on 3–8: its right edge on
+ * the spine, its left edge on the facts' text edge. Each screen is sized
+ * so the three interfaces print at one size (cap height 10–11px at 1440).
+ */
+@media (min-width: 1280px) {
+  .band .plateL {
+    grid-column: 1 / span 8;
+  }
+
+  /* On eight columns the roadmap's caption reads as one line, EN and FR. */
+  .band .plateL figcaption {
+    max-width: none;
+  }
+
+  .band .oneClick {
+    grid-column: 9 / span 4;
+  }
+
+  .band .plateS {
+    grid-column: 9 / span 3;
+  }
+
+  .band .plateM {
+    grid-column: 3 / span 6;
+  }
+}
+
+/*
+ * 1440 and up: the statement takes the right column on the title's last
+ * baseline (3 lines at most, EN and FR). It starts the right-hand text
+ * spine (statement, then the one-click block, then the AI menu, all on
+ * column 9), and the title's first screen holds the whole roadmap.
+ */
+@media (min-width: 1440px) {
+  .intro {
+    align-items: last baseline;
+  }
+
+  .statement {
+    grid-column: 9 / span 4;
+    grid-row: 1;
+    margin-top: 0;
+    text-wrap: balance;
+  }
+}

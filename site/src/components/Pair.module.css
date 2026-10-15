@@ -1,0 +1,547 @@
+/*
+ * Pair v2, the tréma chart (01-system.md §7.6). No track, no knob: a band-grey
+ * before dot (or capsule), an orange after dot, an orange run of dots only
+ * between them, on an honest zero-based scale stated in words.
+ *
+ * Geometry: the drawing is an inline-size container; every part is a
+ * d-wide layer translated by calc(f * (100cqw - d)), where f = value / max
+ * and 100cqw is the measure. So x(v) = d/2 + f(W − d) with no JS, and
+ * nothing ever leaves the measure (no horizontal overflow).
+ *
+ * Custom properties (set inline by Pair.tsx):
+ *   --fb   before fraction (point) or band start      --fe  band end (= --fb for a point)
+ *   --fa   after fraction
+ */
+.pair {
+  --d: var(--pair-d-m);
+  --gap-label: var(--space-2xs);
+  /* its own formatting context: the label band (the drawing's margin)
+     never collapses through the figure into what follows it */
+  display: flow-root;
+  position: relative;
+  width: 100%;
+  margin: 0;
+}
+
+.S {
+  --d: var(--pair-d-s);
+}
+
+.M {
+  --d: var(--pair-d-m);
+}
+
+.L {
+  --d: var(--pair-d-l);
+}
+
+.drawing {
+  position: relative;
+  width: var(--measure-w, 100%);
+  height: var(--d);
+  container-type: inline-size;
+}
+
+/* An S pair in a row: the drawing, then one inline value (FT 600, Small). */
+.withInline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.withInline .drawing {
+  flex: none;
+}
+
+.inlineValue {
+  font-family: var(--font-text);
+  font-weight: var(--weight-ui);
+  font-size: var(--step--1);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--d);
+  height: var(--d);
+  pointer-events: none;
+}
+
+.before {
+  transform: translateX(calc(var(--fb) * (100cqw - var(--d))));
+}
+
+.disc {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--d);
+  height: var(--d);
+  border-radius: 50%;
+}
+
+.before .disc {
+  background-color: var(--field-before);
+}
+
+/* A range is a capsule from a to b, height d, radius d/2. */
+.band .disc {
+  width: calc((var(--fe) - var(--fb)) * (100cqw - var(--d)) + var(--d));
+  border-radius: calc(var(--d) / 2);
+}
+
+.barLayer {
+  transform: translateX(calc(var(--fe) * (100cqw - var(--d)) + var(--d) / 2));
+}
+
+/* The run: dots 0.25d across at a 0.5d pitch, never a solid track (a bar
+   between two discs reads as a range slider). Its ends hide under the
+   discs; it draws by clip-path from the before dot, so no dot stretches. */
+.bar {
+  position: absolute;
+  top: calc(var(--d) * 0.375);
+  left: 0;
+  width: calc((var(--fa) - var(--fe)) * (100cqw - var(--d)));
+  height: calc(var(--d) * 0.25);
+  background-color: var(--field-after);
+  mask: var(--dot-run) 0 0 / calc(var(--d) * 0.5) 100% space no-repeat;
+  clip-path: inset(0 0 0 0);
+}
+
+.after {
+  --x-final: calc(var(--fa) * (100cqw - var(--d)));
+  /* the tréma arrangement: beside the before dot (or the capsule's end), gap 0.27d */
+  --x-rest: calc(var(--fe) * (100cqw - var(--d)) + var(--d) * 1.27);
+  transform: translateX(var(--x-final));
+}
+
+.after .disc {
+  background-color: var(--field-after);
+}
+
+/* An invisible box at the after dot's final position (Figure ink anchor). */
+.anchorLayer {
+  transform: translateX(calc(var(--fa) * (100cqw - var(--d))));
+  visibility: hidden;
+}
+
+.anchor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--d);
+  height: var(--d);
+}
+
+/* ── Labels: attached to their dots, value (600) over description (400). ── */
+.label {
+  position: absolute;
+  top: calc(var(--d) + var(--gap-label));
+  left: calc(var(--d) / 2);
+  width: max-content;
+  max-width: 22ch;
+  transform: translateX(-50%);
+  font-family: var(--font-text);
+  font-size: var(--step--1);
+  line-height: var(--leading-small);
+  color: var(--field-ink);
+}
+
+.L .label {
+  font-size: var(--step-0);
+  line-height: var(--leading-statement);
+  max-width: 26ch;
+}
+
+.label[data-align="center"] {
+  text-align: center;
+}
+
+.label[data-align="start"] {
+  left: 0;
+  transform: none;
+}
+
+.label[data-align="end"] {
+  left: var(--d);
+  transform: translateX(-100%);
+  text-align: end;
+}
+
+.label[data-clamped] {
+  left: 0;
+  transform: translateX(var(--label-x, 0px));
+}
+
+.value {
+  display: block;
+  font-weight: var(--weight-ui);
+}
+
+.text {
+  display: block;
+}
+
+/* x(0) (01 §7.6: the scale is stated in words). A 0.25d band dot at the
+   measure's zero and its value ("0", "0%") centred under it, on the ×1 / ×2
+   line: values only in the band, so 0 → ×1 → ×2 reads as one scale.
+   clampPairLabels keeps the before label clear of it. */
+.zeroTick {
+  position: absolute;
+  top: calc(var(--d) * 0.375);
+  left: calc(var(--d) * 0.375);
+  width: calc(var(--d) * 0.25);
+  height: calc(var(--d) * 0.25);
+  border-radius: 50%;
+  background-color: var(--field-before);
+}
+
+/* The measure and the scale, one Small line under the label band. It
+   starts where the run starts, the before dot's centre (the capsule's first
+   cap, for a range), so it reads with the drawing and stays clear of a
+   column set beside it, never as a label of what follows; clampPairLabels
+   pulls it left when the rest of the measure is too short for one line. */
+.measure {
+  display: block;
+  /* padding, not margin: a margin would collapse into the band above */
+  padding-top: var(--space-s);
+  /* --pair-measure-float: 1 lets the line take no height, for a composition
+     whose next block leaves the space right of the before dot empty (the
+     hero from 1440: the statement stays on columns 1–6). */
+  margin-bottom: calc(var(--pair-measure-float, 0) * -1 * (var(--space-s) + var(--step--1) * var(--leading-small)));
+  /* the box itself starts there (a margin, so nothing of it reaches back
+     over the measure's start), and hugs its words */
+  width: fit-content;
+  margin-inline-start: var(--measure-x, calc(var(--fb) * (var(--measure-w, 100%) - var(--d)) + var(--d) / 2));
+  font-size: var(--step--1);
+  line-height: var(--leading-small);
+  color: var(--field-muted);
+  text-wrap: pretty;
+}
+
+/* Height of the label band under the dots (two lines of labels), kept
+   under the drawing so the measure line follows the band. */
+.withLabels {
+  --band: calc(var(--gap-label) + 2 * var(--leading-small) * var(--step--1));
+}
+
+.L.withLabels {
+  --band: calc(var(--gap-label) + 2 * var(--leading-statement) * var(--step-0));
+}
+
+.withLabels .drawing {
+  margin-bottom: var(--band);
+}
+
+/* lead (M): the pair's one number. The after value at the statement step
+   (League Spartan 700, 22–32px) over its Small description, attached to its
+   dot and in the phone legend; the band grows by the difference. */
+.lead [data-pair-label="after"] .value,
+.lead .legendRow:nth-child(2) .legendValue {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--step-1);
+  line-height: var(--leading-ui);
+  letter-spacing: var(--tracking-statement);
+}
+
+.lead [data-pair-label="after"] .value {
+  margin-bottom: var(--space-3xs);
+}
+
+/* Every description on one baseline: the zero and before labels drop by the
+   lead value's extra height (the hero asked for it, 02 §1). */
+@media (min-width: 600px) {
+  .lead [data-pair-label="start"],
+  .lead [data-pair-label="before"] {
+    padding-top: calc(var(--step-1) * var(--leading-ui) + var(--space-3xs) - var(--step--1) * var(--leading-small));
+  }
+
+  .M.lead.withLabels:not(.legendAlways) {
+    --band: calc(
+      var(--gap-label) + var(--step-1) * var(--leading-ui) + var(--space-3xs) + var(--leading-small) *
+        var(--step--1)
+    );
+  }
+}
+
+/* lead="both": both values at the statement step, so the comparison reads
+   at a glance; the descriptions then share a baseline by construction and
+   the zero label (Small) drops onto the values' baseline (LS 700 at
+   leading-ui: 0.72em; Figtree at leading-small: 1em). The hero passes it. */
+.leadBoth [data-pair-label="before"] .value,
+.leadBoth .legendRow:first-child .legendValue {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--step-1);
+  line-height: var(--leading-ui);
+  letter-spacing: var(--tracking-statement);
+}
+
+.leadBoth [data-pair-label="before"] .value {
+  margin-bottom: var(--space-3xs);
+}
+
+@media (min-width: 600px) {
+  .pair.leadBoth [data-pair-label="before"] {
+    padding-top: 0;
+  }
+
+  .pair.leadBoth [data-pair-label="start"] {
+    padding-top: calc(0.72 * var(--step-1) - var(--step--1));
+  }
+}
+
+/* ── Phone legend (< 600px): the labels leave the dots and become a legend. ── */
+.legend {
+  display: none;
+  margin-top: var(--space-xs);
+  font-size: var(--step--1);
+  line-height: var(--leading-small);
+  color: var(--field-ink);
+}
+
+.legendRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2xs);
+}
+
+.swatch {
+  flex: none;
+  align-self: center;
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 50%;
+}
+
+.swatchBefore {
+  background-color: var(--field-before);
+}
+
+.swatchBand {
+  width: 1.2em;
+  border-radius: 0.3em;
+  background-color: var(--field-before);
+}
+
+.swatchAfter {
+  background-color: var(--field-after);
+}
+
+.legendText {
+  color: var(--field-ink);
+}
+
+.legendValue {
+  font-weight: var(--weight-ui);
+}
+
+.caption {
+  padding-top: var(--space-2xs);
+  font-size: var(--step--1);
+  line-height: var(--leading-small);
+  color: var(--field-muted);
+}
+
+@media (max-width: 599px) {
+  .withLabels,
+  .L.withLabels,
+  .M.lead.withLabels {
+    --band: 0px;
+  }
+
+  .withLabels .label,
+  .withLabels .zeroTick,
+  .withLabels .measure {
+    display: none;
+  }
+
+  .withLabels .legend {
+    display: grid;
+  }
+}
+
+.legendAlways.withLabels {
+  --band: 0px;
+}
+
+.legendAlways .label,
+.legendAlways .zeroTick,
+.legendAlways .measure {
+  display: none;
+}
+
+.legendAlways .legend {
+  display: grid;
+}
+
+/* ══ Motion (01 §6.1, §6.3). Rest states exist only under html.js and
+   no-preference; without JS and under reduced motion the pair is parted. ══ */
+@media (prefers-reduced-motion: no-preference) {
+  /* entry + scrub: rest in the tréma arrangement until parted */
+  :global(html.js) .entry:not([data-parted]) .after,
+  :global(html.js) .manual:not([data-parted]) .after,
+  :global(html.js) .scrub:not([data-parted]) .after {
+    transform: translateX(var(--x-rest));
+  }
+
+  :global(html.js) .entry:not([data-parted]) .bar,
+  :global(html.js) .manual:not([data-parted]) .bar,
+  :global(html.js) .scrub:not([data-parted]) .bar {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  :global(html.js) .entry:not([data-parted]) .label:not(.start),
+  :global(html.js) .manual:not([data-parted]) .label:not(.start),
+  :global(html.js) .scrub:not([data-parted]) .label:not(.start) {
+    opacity: 0;
+  }
+
+  .entry[data-parted] .after,
+  .manual[data-parted] .after {
+    transition: transform var(--dur-part) var(--ease-in-out) 120ms;
+  }
+
+  .entry[data-parted] .bar,
+  .manual[data-parted] .bar {
+    transition: clip-path var(--dur-part) var(--ease-in-out) 120ms;
+  }
+
+  .entry[data-parted] .label,
+  .manual[data-parted] .label {
+    transition: opacity 500ms var(--ease-out) 760ms;
+  }
+
+  /* load (the hero): dots fade in at the tréma position at 360ms, part at
+     500ms over 1000ms; labels at 1260ms. Waits for html.fonts-ready. */
+  :global(html.js:not(.fonts-ready)) .load .layer,
+  :global(html.js:not(.fonts-ready)) .load .measure,
+  :global(html.js:not(.fonts-ready)) .load .legend {
+    opacity: 0;
+  }
+
+  :global(html.js.fonts-ready) .load .before,
+  :global(html.js.fonts-ready) .load .barLayer,
+  :global(html.js.fonts-ready) .load .zeroTick {
+    animation: pair-fade 300ms var(--ease-out) 360ms backwards;
+  }
+
+  :global(html.js.fonts-ready) .load .after {
+    animation:
+      pair-fade 300ms var(--ease-out) 360ms backwards,
+      pair-part var(--dur-part) var(--ease-in-out) 500ms backwards;
+  }
+
+  :global(html.js.fonts-ready) .load .bar {
+    animation: pair-draw var(--dur-part) var(--ease-in-out) 500ms backwards;
+  }
+
+  :global(html.js.fonts-ready) .load .label:not(.start) {
+    animation: pair-fade 240ms var(--ease-hover) 1260ms backwards;
+  }
+
+  :global(html.js.fonts-ready) .load .startLayer .label,
+  :global(html.js.fonts-ready) .load .measure,
+  :global(html.js.fonts-ready) .load .legend {
+    animation: pair-fade 240ms var(--ease-hover) 1260ms backwards;
+  }
+
+  /* A later home view in the same session (html.beat-seen, lib/boot.ts):
+     drawn parted, arriving as one 200ms opacity step. */
+  :global(html.js.beat-seen.fonts-ready) .load .layer,
+  :global(html.js.beat-seen.fonts-ready) .load .label,
+  :global(html.js.beat-seen.fonts-ready) .load .startLayer .label,
+  :global(html.js.beat-seen.fonts-ready) .load .measure,
+  :global(html.js.beat-seen.fonts-ready) .load .legend {
+    animation: pair-fade 200ms var(--ease-out) backwards;
+  }
+
+  :global(html.js.beat-seen.fonts-ready) .load .bar {
+    animation: none;
+  }
+}
+
+@keyframes pair-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes pair-part {
+  from {
+    transform: translateX(var(--x-rest));
+  }
+}
+
+@keyframes pair-draw {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+
+/* While the flight carries the hero's dots, the pair's own marks step aside
+   (the labels stay). */
+.pair[data-flying] .disc,
+.pair[data-flying] .bar {
+  opacity: 0;
+}
+
+/* The discs, the run and the swatches are background colours: printed as
+   drawn, and in forced colours (Windows High Contrast) painted in system
+   colours instead of vanishing: before in CanvasText, after in Highlight. */
+.disc,
+.bar,
+.zeroTick,
+.swatch {
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+@media (forced-colors: active) {
+  .disc,
+  .bar,
+  .zeroTick,
+  .swatch {
+    forced-color-adjust: none;
+  }
+
+  .before .disc,
+  .zeroTick,
+  .swatchBefore,
+  .swatchBand {
+    background-color: CanvasText;
+  }
+
+  .after .disc,
+  .bar,
+  .swatchAfter {
+    background-color: Highlight;
+  }
+}
+
+/* Print: every pair parted, whatever its motion state (a scrubbed or entry
+   pair that never parted would print in the tréma rest). */
+@media print {
+  .pair .after {
+    transform: translateX(var(--x-final)) !important;
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .pair .bar {
+    clip-path: none !important;
+    animation: none !important;
+  }
+
+  .pair .label,
+  .pair .layer,
+  .pair .measure,
+  .pair .legend {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+}

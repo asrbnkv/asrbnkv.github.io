@@ -1,0 +1,549 @@
+/*
+ * The hero (02-home.md §1): paper, one grid, three compositions.
+ *
+ * Measured (League Spartan): ascent 0.70em, cap 0.66em, descent 0.22em. At
+ * leading 0.95 a display line's baseline sits 0.715em under its box top and
+ * 0.235em above its box bottom; "Product Owner" advances 6.1186em, so with
+ * the 0.25em gap the bust starts 6.3686em after the margin. The monument's
+ * line box (leading 0.8) puts its baseline 0.64em under its top and ends
+ * 0.16em under it. Figtree at leading 1.55: last baseline 0.425em above the
+ * box bottom. The statement (LS 500, leading 1.18) is trimmed to its cap
+ * line and last baseline where text-box is supported.
+ *
+ *   ≥ 1024     the poster (the contract's first viewport). Name row: the
+ *              monument, the role with its bust, the facts on column 9 on
+ *              the role's baseline. Pair across the full measure. Bottom
+ *              row: the statement on columns 1–8 (one sentence a line from
+ *              1280), the actions on column 9, the button's foot on the
+ *              statement's last baseline. The rows fill the first screen;
+ *              what is left over is shared by the two gaps.
+ *   600–1023   name · pair · statement · facts · actions
+ *   < 600      the phone's own order (the number right under the role)
+ *
+ * Only two left edges from 1024: column 1 and column 9. The flight's layer
+ * (Flight.tsx) is this field's last child, above the type (01 §4.5): the
+ * ë's own dots in motion, hidden at rest.
+ */
+.root {
+  /* the monument's size with the opened joins (Monument.module.css) */
+  --step-monument: max(4.5rem, calc((100cqi - var(--margin)) / 2.6639));
+  --bust-h: clamp(4rem, calc(var(--step-2) * 0.9), 5.375rem);
+  --bust-w: calc(var(--bust-h) * 193 / 173);
+  --role: var(--step-2);
+  /* the role row's height above its baseline: the bust, or the role's
+     own ascent where that is taller */
+  --lift: max(var(--bust-h), 0.715 * var(--role));
+  /* the bust's top under the monument's baseline (01 §7.1) */
+  --clear: 24px;
+  --hero-top: var(--bar);
+  --pad-top: var(--space-l);
+  --pad-bottom: var(--space-l);
+  /* role row → pair, pair → bottom row: floors; the poster adds the rest */
+  --gap-pair: var(--space-xl);
+  --gap-bottom: var(--space-xl);
+  /* one grid column (100cqi is this section's width wherever it is used) */
+  --col: calc((100cqi - 2 * var(--margin) - (var(--columns) - 1) * var(--gutter)) / var(--columns));
+  --col-9: calc(var(--margin) + 8 * (var(--col) + var(--gutter)));
+  /* the pair's descriptions and measure at the body step (≥ 600) */
+  --desc-size: var(--step-0);
+  --desc-leading: var(--leading-statement);
+
+  position: relative;
+  isolation: isolate;
+  container-type: inline-size;
+  overflow: clip;
+  min-height: 0;
+  padding-block: var(--pad-top) var(--pad-bottom);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "name"
+    "pair"
+    "statement"
+    "facts"
+    "actions";
+  align-content: start;
+}
+
+/* ── Name: the h1 (monument + role line) and the bust beside the role ── */
+.name {
+  grid-area: name;
+  position: relative;
+  min-width: 0;
+}
+
+.h1 {
+  display: block;
+  font-weight: inherit;
+}
+
+.h1 .role {
+  display: block;
+  padding-left: var(--margin);
+  font-size: var(--role);
+  white-space: nowrap;
+  /* the bust's top (or the role's ascent) stays --clear under the
+     monument's baseline */
+  margin-top: calc(var(--clear) + var(--lift) - 0.715 * var(--role) - 0.16 * var(--step-monument));
+}
+
+.bust {
+  position: absolute;
+  left: calc(var(--margin) + 6.3686 * var(--role));
+  bottom: calc(0.235 * var(--role));
+  line-height: 0;
+}
+
+/* The portrait as a glyph of the ink: one greyscale treatment, its matte
+   eroded by half a pixel so no light fringe of the CV photo's background
+   rings the hair (the filter is the inline SVG in Hero.tsx). */
+.bust img {
+  height: var(--bust-h);
+  filter: url("#hero-bust-tone");
+}
+
+.tone {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* ── Facts: three short lines in full ink ── */
+.facts {
+  grid-area: facts;
+  margin-top: var(--space-m);
+  padding-inline: var(--margin);
+}
+
+/* ── The proof pair: across the full measure ── */
+.pair {
+  grid-area: pair;
+  margin-top: var(--gap-pair);
+  padding-inline: var(--margin);
+}
+
+/* ── Statement and actions ── */
+.statement {
+  grid-area: statement;
+  margin-top: var(--gap-bottom);
+  margin-inline: var(--margin);
+  max-width: none;
+}
+
+.actions {
+  grid-area: actions;
+  margin-top: var(--space-l);
+  padding-inline: var(--margin);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-s) var(--space-l);
+}
+
+.cta,
+.cv {
+  display: flex;
+}
+
+/* ── Load beat (01 §6.1). The name, the role with its bust and the pair
+   move; the rest arrives without travel: the facts row by row (a list,
+   45ms apart, 8px), then the statement and the actions as one quiet step. ── */
+.h1 .role,
+.bust {
+  --beat-delay: 160ms;
+  --beat-dur: 800ms;
+}
+
+.facts li {
+  --beat-delay: 300ms;
+  --beat-dur: 600ms;
+  --beat-fade: 400ms;
+  --beat-travel: var(--rise-ui);
+}
+
+.facts li:nth-child(2) {
+  --beat-delay: 345ms;
+}
+
+.facts li:nth-child(3) {
+  --beat-delay: 390ms;
+}
+
+.statement,
+.cta,
+.cv {
+  --beat-delay: 480ms;
+  --beat-fade: 300ms;
+}
+
+/* ── The pair's words (≥ 600). The zero keeps its tick and loses its "0":
+   the measure and the scale take the start slot, at the margin, on the
+   descriptions' line, in their size and ink, so the band reads 0 → ×1 → ×2
+   from its origin with two left edges. ── */
+.pair [data-pair-label="start"] {
+  display: none;
+}
+
+@media (min-width: 600px) {
+  /* the pair's own id: Pair's lead band (.M.lead.withLabels) is 0-4-0 */
+  .root :global(#hero-pair) {
+    --band: calc(
+      var(--gap-label) + var(--step-1) * var(--leading-ui) + var(--space-3xs) + var(--desc-size) * var(--desc-leading)
+    );
+  }
+
+  .root .pair [data-pair-label] {
+    font-size: var(--desc-size);
+    line-height: var(--desc-leading);
+  }
+
+  .root .pair [data-pair-measure] {
+    margin: calc(-1 * var(--desc-size) * var(--desc-leading)) 0 0;
+    padding: 0;
+    width: auto;
+    /* the measure, then the scale, a sentence a line (the deck's start
+       label: "DAU at AppBazar (MTS)" / "Scale…"); one line from 1024 */
+    max-width: 12.5em;
+    font-size: var(--desc-size);
+    line-height: var(--desc-leading);
+    color: var(--field-ink);
+    text-wrap: wrap;
+  }
+}
+
+@media (min-width: 1024px) {
+  .root .pair [data-pair-measure] {
+    max-width: calc(50cqi - var(--margin) - 4em);
+    white-space: nowrap;
+  }
+}
+
+/* ══ The poster (≥ 1024): three rows that fill the first screen. ══ */
+@media (min-width: 1024px) {
+  .root {
+    --gap-pair: var(--space-s);
+    --gap-bottom: var(--space-m);
+    /* the pair's dots: M on short screens, L where the poster has room */
+    --hero-d: var(--pair-d-m);
+    /* the pair's height (dots and its label band), for the fold rule below */
+    --pair-h: calc(
+      var(--hero-d) + var(--gap-label, var(--space-2xs)) + var(--step-1) * var(--leading-ui) + var(--space-3xs) +
+        var(--desc-size) * var(--desc-leading)
+    );
+    /* the name row: the monument above its baseline, the clear, the role's
+       height above its baseline and its line box under it */
+    --name-h: calc(0.64 * var(--step-monument) + var(--clear) + var(--lift) + 0.235 * var(--role));
+    min-height: calc(100svh - var(--hero-top));
+    grid-template-areas:
+      "name"
+      "pair"
+      "bottom";
+    /* the floors are the gaps' margins; what the screen has left over is
+       shared by the two gaps */
+    align-content: space-between;
+  }
+
+  /* The facts stand in the name row on column 9, their last baseline on
+     the role's (both items align by their last baselines). */
+  .name {
+    align-self: last baseline;
+  }
+
+  .facts {
+    grid-area: name;
+    align-self: last baseline;
+    justify-self: start;
+    width: calc(4 * var(--col) + 3 * var(--gutter));
+    margin: 0 0 0 var(--col-9);
+    padding: 0;
+  }
+
+  .statement {
+    grid-area: bottom;
+    align-self: end;
+    width: calc(8 * var(--col) + 7 * var(--gutter));
+    margin-top: var(--gap-bottom);
+  }
+
+  /* The actions share the bottom row: the button's foot on the statement's
+     last baseline (the statement's box is trimmed to it). */
+  .actions {
+    grid-area: bottom;
+    align-self: end;
+    justify-self: start;
+    width: calc(4 * var(--col) + 3 * var(--gutter));
+    margin: 0 0 0 var(--col-9);
+    padding: 0;
+    flex-wrap: nowrap;
+    gap: var(--space-l);
+  }
+
+  /* Under 1280px column 9 cannot hold the button, the link and its note on
+     one line: the note hangs under the link, out of the row's height, so
+     the button's foot keeps the statement's last baseline. */
+  .cv {
+    position: relative;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .actions {
+    gap: var(--space-m);
+  }
+
+  .cv :global(#hero-cv-note) {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: calc(-1 * var(--space-2xs));
+    white-space: nowrap;
+  }
+}
+
+/* The statement's box runs from its cap line to its last baseline. */
+@supports (text-box: trim-both cap alphabetic) {
+  @media (min-width: 1024px) {
+    .statement {
+      text-box: trim-both cap alphabetic;
+    }
+  }
+}
+
+@supports not (text-box: trim-both cap alphabetic) {
+  @media (min-width: 1024px) {
+    .actions {
+      margin-bottom: calc((var(--leading-statement) - 0.92) / 2 * var(--step-1) + 0.22 * var(--step-1));
+    }
+  }
+}
+
+/* Portrait screens of poster width (an iPad Pro upright, a rotated
+   monitor): the poster does not stretch to the screen's height, which would
+   open two bands of empty paper; the chapter is as tall as its rows, with
+   the tablet's gaps, and `edge` rises under it. */
+@media (min-width: 1024px) and (max-aspect-ratio: 1/1) {
+  .root {
+    --gap-pair: var(--space-2xl);
+    --gap-bottom: var(--space-2xl);
+    min-height: 0;
+  }
+}
+
+/* The number at the poster's scale: on screens with room (820px of height
+   and more) the pair takes the L dots (44px, an 11px run at a 22px pitch),
+   so it reads as a chart, not a thin progress rule, and the ë's 86px dots
+   land on discs half their size. Short screens keep M. */
+@media (min-width: 1024px) {
+  .root :global(#hero-pair) {
+    --d: var(--hero-d);
+  }
+}
+
+@media (min-width: 1024px) and (min-height: 820px) {
+  .root {
+    --hero-d: var(--pair-d-l);
+  }
+}
+
+/* From 1280 each sentence takes its own line. */
+@media (min-width: 1280px) {
+  .sentence {
+    display: block;
+  }
+}
+
+/* Above 1440 the role and its bust grow with the monument (0.178 of it,
+   at most 128px); the bust stays at its native 86px. */
+@media (min-width: 1441px) {
+  .root {
+    --role: clamp(var(--step-2), calc(0.178 * var(--step-monument)), 8rem);
+  }
+}
+
+/* ── Short desktops (01 §3.4: 1440×790–800, 1366×768, 1280×720, 1536×730,
+   1366×650). The rows tighten in steps so the bottom row stays on the
+   first screen wherever it can; then the pair's labels go on one line per
+   dot; then the top tightens again. ── */
+@media (min-width: 1024px) and (max-height: 819px) {
+  .root {
+    --pad-top: var(--space-m);
+    --pad-bottom: 28px;
+  }
+}
+
+@media (min-width: 1024px) and (max-height: 759px) {
+  .root {
+    --clear: var(--space-s);
+    --pair-h: calc(var(--hero-d) + var(--gap-label, var(--space-2xs)) + var(--step-1) * var(--leading-ui));
+  }
+
+  .root :global(#hero-pair) {
+    --band: calc(var(--gap-label) + var(--step-1) * var(--leading-ui));
+  }
+
+  .root .pair [data-pair-label] > * {
+    display: inline;
+  }
+
+  .root .pair [data-pair-label] > :last-child {
+    margin-inline-start: 0.45em;
+  }
+
+  .root .pair [data-pair-label] {
+    white-space: nowrap;
+  }
+
+  .root .pair [data-pair-measure] {
+    margin-top: calc(-1 * var(--step-1) * var(--leading-ui));
+    line-height: calc(var(--step-1) * var(--leading-ui));
+    white-space: nowrap;
+  }
+}
+
+@media (min-width: 1024px) and (max-height: 699px) {
+  .root {
+    --pad-top: var(--space-s);
+    --gap-pair: var(--space-xs);
+    --bust-h: 4.5rem;
+  }
+
+  .facts {
+    line-height: 1.4;
+  }
+}
+
+/* When the fold has to start the bottom row on the next screen (lib/fold.ts
+   marks the statement, the hero's 4th child), the pair takes the foot of
+   the first screen: its labels end 48px above the fold (the fold's own
+   clearance), so no band of empty paper opens under it. */
+@media (min-width: 1024px) {
+  :global(html[data-fold="4"]) .root .pair {
+    margin-top: max(
+      var(--gap-pair),
+      calc(100svh - 48px - var(--hero-top) - var(--pad-top) - var(--name-h) - var(--pair-h))
+    );
+  }
+}
+
+/* ── Phone (< 600): its own composition (02 §1.3). The hard number sits
+   right under the role line; the stone edge of `edge` shows at the fold. ── */
+@media (max-width: 599px) {
+  .root {
+    --clear: 16px;
+    --pad-top: var(--space-m);
+    --pad-bottom: var(--space-xl);
+    /* role + 0.25em + bust on one line, and a lane right of the bust as
+       wide as one of the ë's dots plus air, so the flight can fall clear of
+       the role line on every phone (342 of 358px at 390; under 390px the
+       role steps down) */
+    --lane: calc(0.161 * var(--step-monument) + 14px);
+    --role: min(var(--step-2), calc((100cqi - var(--margin) - var(--bust-w) - var(--lane)) / 6.3686));
+    min-height: calc(100svh - var(--bar) - var(--space-xl));
+  }
+
+  /* d 20 with the phone legend (02 §1.3); the zero keeps its tick, so the
+     row starts on the margin like every other block */
+  .root .pair :has(+ [data-pair-label="start"]) {
+    display: block;
+  }
+
+  .pair {
+    margin-top: var(--space-m);
+  }
+
+  .statement {
+    margin-top: var(--space-m);
+  }
+
+  .facts {
+    margin-top: var(--space-s);
+  }
+
+  .actions {
+    margin-top: var(--space-m);
+    display: grid;
+    gap: var(--space-2xs);
+  }
+
+  /* Email me, full width (01 §7.4) */
+  .cta > a {
+    flex: 1;
+  }
+}
+
+/* Short phones (02 §1.3: max-height 739px): the facts move after the
+   actions, so Email me stays above the fold. Under 680px of height
+   (375×667, 360×640, 320×640) the actions come right after the number and
+   the facts (Paris, the languages) after them, so the first screen carries
+   the whole claim; the statement opens the next screen. */
+@media (max-width: 599px) and (max-height: 739px) {
+  .root {
+    grid-template-areas:
+      "name"
+      "pair"
+      "statement"
+      "actions"
+      "facts";
+  }
+
+  .facts {
+    margin-top: var(--space-l);
+  }
+
+  .facts li {
+    --beat-delay: 570ms;
+  }
+
+  .facts li:nth-child(2) {
+    --beat-delay: 615ms;
+  }
+
+  .facts li:nth-child(3) {
+    --beat-delay: 660ms;
+  }
+}
+
+@media (max-width: 599px) and (max-height: 679px) {
+  .root {
+    grid-template-areas:
+      "name"
+      "pair"
+      "actions"
+      "facts"
+      "statement";
+  }
+
+  .facts {
+    margin-top: var(--space-s);
+  }
+
+  .statement {
+    margin-top: var(--space-l);
+  }
+}
+
+/* A keyboard user never lands on a control that is still fading in (the
+   <Reveal> guard): focus shows it at once. */
+:global(html.js) .root[data-field] [data-beat]:focus-within {
+  animation: none;
+  opacity: 1;
+  transform: none;
+}
+
+/* Played once: the beat never replays in this view (switching reduced
+   motion off mid-session re-applies the no-preference rules). Flight.tsx
+   sets html.beat-done when the beat has finished. */
+:global(html.js.beat-done) .root[data-field] [data-beat],
+:global(html.js.beat-done) .root[data-field] [data-pair-drawing] > *,
+:global(html.js.beat-done) .root[data-field] [data-pair-bar],
+:global(html.js.beat-done) .root[data-field] [data-pair-label],
+:global(html.js.beat-done) .root[data-field] [data-pair-measure],
+:global(html.js.beat-done) .root[data-field] [data-pair-legend] {
+  animation: none;
+}
+
+/* ── Lab (/lab/hero/ without the bar): the chapter alone fills the screen. ── */
+:global(body:not(:has([data-bar]))) .root {
+  --hero-top: 0px;
+}

@@ -1,0 +1,101 @@
+/*
+ * The Test step's pair (RowPair.tsx). The Pair draws the measure, its dots
+ * and its 0; this row adds the scale's other end (01 §7.6: "0" under the
+ * measure's start, the maximum under its end), in the 0's own style: a
+ * 0.25d band dot at x(max) = measure − d/2, its value centred under it on
+ * the line of the ×1 and ×1.5 values. With both ends drawn, 0 · ×1 ·
+ * about ×1.5 · ×2 reads as one scale, and the 0 is no longer a lone mark.
+ * The ends never move: only the two dots part.
+ */
+.row {
+  --d: var(--pair-d-m);
+  position: relative;
+  /* the pair shares the loop's text measure (62ch of the body size) */
+  max-width: var(--measure);
+  container: row-pair / inline-size;
+}
+
+/* The caption states the scale in words at every width: the legend never
+   repeats it. */
+.row [data-pair] [data-pair-legend] > li:last-child {
+  display: none;
+}
+
+/*
+ * A measure too short to keep the ×1 and about ×1.5 labels centred on their
+ * dots (they would part to the dots' outer edges and crowd the ×2): the
+ * band under the drawing keeps the scale's two ends (0, ×2) and the two
+ * labels become the Pair's legend under it, as on phones. Measured: centred
+ * labels need 590px (EN) and 640px (FR); at 1440 the column is 676px.
+ */
+@container row-pair (max-width: 589px) {
+  .row [data-pair] {
+    --band: calc(var(--space-2xs) + var(--step--1) * var(--leading-small));
+  }
+
+  .row [data-pair] [data-pair-label="before"],
+  .row [data-pair] [data-pair-label="after"] {
+    display: none;
+  }
+
+  .row [data-pair] [data-pair-label="start"],
+  .row [data-pair-drawing] > :has(> [data-pair-label="start"]) > :not([data-pair-label]) {
+    display: block;
+  }
+
+  .row [data-pair] [data-pair-legend] {
+    display: grid;
+  }
+}
+
+@container row-pair (min-width: 590px) and (max-width: 639px) {
+  .row [data-pair]:lang(fr) {
+    --band: calc(var(--space-2xs) + var(--step--1) * var(--leading-small));
+  }
+
+  .row [data-pair]:lang(fr) [data-pair-label="before"],
+  .row [data-pair]:lang(fr) [data-pair-label="after"] {
+    display: none;
+  }
+
+  .row [data-pair]:lang(fr) [data-pair-legend] {
+    display: grid;
+  }
+}
+
+.max {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--d);
+  height: var(--d);
+  pointer-events: none;
+}
+
+.tick {
+  position: absolute;
+  inset: 37.5%;
+  border-radius: 50%;
+  background-color: var(--field-before);
+  print-color-adjust: exact;
+}
+
+.value {
+  position: absolute;
+  top: calc(100% + var(--space-2xs));
+  left: 50%;
+  translate: -50% 0;
+  font-family: var(--font-text);
+  font-size: var(--step--1);
+  font-weight: var(--weight-ui);
+  line-height: var(--leading-small);
+  color: var(--field-ink);
+  white-space: nowrap;
+}
+
+@media (forced-colors: active) {
+  .tick {
+    forced-color-adjust: none;
+    background-color: CanvasText;
+  }
+}

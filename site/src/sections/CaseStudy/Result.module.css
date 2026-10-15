@@ -1,0 +1,164 @@
+/*
+ * The result chapter's charts (03-case-and-pages.md §3.4, §7.2–7.4).
+ */
+.h3 {
+  grid-column: 1 / -1;
+  text-box: trim-both cap alphabetic;
+}
+
+/* ── Product, "What I tested": h3 | note, then the A/B pair margin to margin. ── */
+.testedText,
+.testedPair {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.testedText {
+  max-width: var(--measure);
+}
+
+.testedPair {
+  margin-top: var(--space-xl);
+}
+
+@media (min-width: 1100px) {
+  .tested .h3 {
+    grid-column: 1 / 8;
+    grid-row: 1;
+  }
+
+  .testedText {
+    grid-column: 8 / 13;
+    grid-row: 1;
+  }
+}
+
+/* The pair's caption (measure and scale) under its label band. */
+.pairCaption {
+  margin-top: var(--space-2xs);
+  max-width: var(--measure);
+  text-wrap: balance;
+}
+
+/* ── Unit fields: payments' two 100-dot fields, the CRM's 80. ── */
+.fields {
+  align-items: end;
+  row-gap: var(--space-xl);
+}
+
+.fieldA {
+  grid-column: 1 / 3;
+}
+
+.fieldB {
+  grid-column: 3 / 5;
+}
+
+.fieldsNote,
+.markets {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+@media (min-width: 600px) {
+  .fieldA {
+    grid-column: 1 / 4;
+  }
+
+  .fieldB {
+    grid-column: 4 / 7;
+  }
+
+  .fieldsNote {
+    grid-column: 7 / 9;
+  }
+
+  .markets {
+    grid-column: 4 / 9;
+  }
+}
+
+@media (min-width: 1024px) {
+  .fieldA {
+    grid-column: 1 / 5;
+  }
+
+  .fieldB {
+    grid-column: 5 / 9;
+  }
+
+  .fieldsNote {
+    grid-column: 9 / 13;
+  }
+
+  .markets {
+    grid-column: 5 / 13;
+  }
+}
+
+/* The CRM's four markets as display names, standing on the field's last row. */
+.markets {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--space-2xl);
+  row-gap: var(--space-s);
+  margin-bottom: calc(var(--space-xs) + var(--leading-small) * var(--step--1));
+}
+
+.market {
+  text-box: trim-both cap alphabetic;
+}
+
+@media (max-width: 599px) {
+  .markets {
+    column-gap: var(--space-l);
+    margin-bottom: 0;
+  }
+}
+
+/* ── Freelance, "Two AI projects": two h3 blocks, cols 1–6 and 8–12. ── */
+.duo {
+  margin-top: var(--space-3xl);
+  row-gap: var(--space-3xl);
+}
+
+.duoA,
+.duoB {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+@media (min-width: 600px) and (max-width: 1099px) {
+  .duoA,
+  .duoB {
+    grid-column: 1 / 8;
+  }
+}
+
+@media (min-width: 1100px) {
+  .duoA {
+    grid-column: 1 / 7;
+  }
+
+  .duoB {
+    grid-column: 8 / 13;
+  }
+}
+
+.duoText {
+  margin-top: var(--space-m);
+  max-width: var(--measure);
+}
+
+.duoFigure {
+  margin-top: var(--space-xl);
+}
+
+p.duoFigure {
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.duoValue {
+  text-box: trim-both cap alphabetic;
+}

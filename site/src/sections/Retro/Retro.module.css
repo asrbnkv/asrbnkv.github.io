@@ -1,0 +1,316 @@
+/*
+ * retro: What I'd do differently (02-home.md §7). Stone field, ink type.
+ * Token values only: no raw hex, px type sizes or curves.
+ *
+ * One order at every width, the DOM's: the imperative, its reason, then the
+ * case under the reason. The left edge holds only the H2, the statement and
+ * the six imperatives; each reason and its case share an edge of their own.
+ *
+ *   1100+      the imperative on columns 1–8 (one gutter short, so its glyphs
+ *              always end two gutters before the reason); the reason beside
+ *              it on 9–12, standing on the line's last baseline; the case
+ *              8px under the reason, hanging into the gap after the item.
+ *   1024–1099  the imperative on 1–8; the reason and the case under it on
+ *              4–11 (x≈274 at 1024, where 768's column 3 sits at 1023).
+ *   600–1023   the imperative on the full measure; the reason and the case
+ *              under it on columns 3–8.
+ *   <600       the imperative on the full measure, sized so its widest glued
+ *              phrase always fits; the reason and the case under it on 2–4.
+ *
+ * The six lines are poster lines: the display step in its own weight (LS
+ * 700), the H2's size and weight. The H2 is told apart by its place: the
+ * statement under it and the 128px before the wall.
+ *
+ * With a fine pointer each lesson is one target: a click anywhere on it
+ * follows its case link (rowLinks.ts), so the row does what its hover
+ * promises, and its line presses at the large row scale (01 §5.1).
+ */
+.root {
+  /* Stacked (under 1100): each item is a block (line, reason, case); 80px
+     between items keeps a Small case clearly with its own reason, never
+     the next line's kicker. 112px before the wall on phones, 1.4× that. */
+  --item-gap: calc(var(--space-2xl) + var(--space-s));
+  --wall-gap: calc(var(--space-3xl) + var(--space-s));
+  /* The reason and its case arrive in 400ms: they land with the line. */
+  --part-dur: 400ms;
+  display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  column-gap: var(--gutter);
+  padding-block: var(--section-gap);
+  padding-inline: var(--margin);
+}
+
+.title {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+/* 24px under the H2; the section gap above it is more than twice that. */
+.statement {
+  grid-column: 1 / -1;
+  margin: var(--space-m) 0 0;
+}
+
+/* ── The poster wall (01 §7.13) ───────────────────────────────────────── */
+.wall {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--item-gap);
+  margin: var(--wall-gap) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  column-gap: var(--gutter);
+}
+
+.line {
+  grid-row: 1;
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+/* A glued phrase ("the playbook earlier.", « et l'automatisation. »): no
+   line ends on an article, a preposition or "and", and no lesson ends on a
+   lone word. It never wraps: the phone size below makes room for it. */
+.phrase {
+  white-space: nowrap;
+}
+
+/* Under 1100 the reason and the case sit on the item's own grid. */
+.aside {
+  display: contents;
+}
+
+/* A reason is a note of one or two sentences (≤ 150 characters, 1–5
+   lines): balanced, so no line is left with a two-word tail ("data / entry
+   manual.", « des contacts. »); measured at every width, EN and FR.
+   French reasons hyphenate (globals.css); in a narrow column only long
+   words break, so "introduit" and "effacé" stay whole. */
+.reason {
+  grid-row: 2;
+  grid-column: 2 / -1;
+  margin: var(--space-s) 0 0;
+  max-width: var(--measure);
+  text-wrap: balance;
+  hyphenate-limit-chars: 10 4 4;
+}
+
+/* The case: the reason's citation, 8px under it, on its left edge. */
+.cite {
+  grid-row: 3;
+  grid-column: 2 / -1;
+  justify-self: start;
+  margin-top: var(--space-2xs);
+}
+
+/* ── The case link, and the lesson as its target ──────────────────────────
+   A link is an option that can be chosen, so it is set in the ink, never
+   grey (01 §2.1); its underline rests at 40% (globals.css). Its own target
+   is 40px tall: a transparent band 0.7em above and below the citation,
+   which never reaches the lesson's display type.
+   With a fine pointer the whole lesson leads to its case: the row takes the
+   pointer cursor and a click anywhere on it follows the link (rowLinks.ts),
+   except one that ends a text selection, so every word stays selectable.
+   Script-only, so without JS nothing promises more than the link does. */
+.link {
+  position: relative;
+  transition:
+    text-decoration-color var(--dur-hover) var(--ease-out),
+    text-decoration-thickness var(--dur-hover) var(--ease-out),
+    opacity var(--dur-press) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.link::before {
+  content: "";
+  position: absolute;
+  inset: -0.7em -0.25em;
+}
+
+/* Keyboard focus is not animated: the underline goes to 100% with the ring. */
+.link:focus-visible {
+  transition-duration: 0ms;
+}
+
+/* Pointing at a lesson lights its case: the underline doubles and goes to
+   full ink, at the same offset, so nothing shifts. The display type stays
+   still; it is already in full ink. */
+@media (hover: hover) and (pointer: fine) {
+  :global(html.js) .item {
+    cursor: pointer;
+  }
+
+  :global(html.js) .item:hover .link {
+    text-decoration-color: currentColor;
+    text-decoration-thickness: calc(2 * var(--underline-thickness));
+  }
+}
+
+/* Pressing a lesson presses its line, from the wall's left edge (the large
+   row scale, 01 §5.1); the case dims to 70% with every link (globals.css).
+   Fine pointers only: a thumb that lands on a lesson to scroll the page
+   must not make the poster flinch. */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  :global(html.js) .line {
+    transform-origin: 0 50%;
+    transition: transform var(--dur-press) var(--ease-out);
+  }
+
+  :global(html.js) .item:active .line {
+    transform: scale(var(--press-scale-row));
+  }
+}
+
+/* ── The masked rise (02 §7.4) ────────────────────────────────────────────
+   The H2 and the six lines rise out of their own baselines. While a block
+   waits, each word stands in a clip box that ends just under the descenders
+   (League Spartan: descent 0.22em under a baseline 0.71em down a 0.95em
+   line, so the box bottom clears g, p, y) and the word sits 1.2em lower,
+   out of sight. On entry each visual line rises, transform only, 90ms after
+   the one above. The clip reaches 0.25em above the box for É and 0.15em to
+   each side for overhangs; it never moves, so the baseline is where it will
+   stay. Once landed, the boxes go back to plain inline text (no re-wrap:
+   the clip and the transform never touch layout).
+   Screen only: without JS, under reduced motion and in print none of this
+   exists, so every word is always there. */
+@media screen and (prefers-reduced-motion: no-preference) {
+  :global(html.js) .masked:not([data-settled]) .mask {
+    display: inline-block;
+    clip-path: inset(-0.25em -0.15em -0.02em -0.15em);
+  }
+
+  :global(html.js) .masked:not([data-settled]) .word {
+    display: inline-block;
+  }
+
+  :global(html.js) .masked:not([data-revealed]) .word {
+    transform: translate3d(0, 1.2em, 0);
+  }
+
+  :global(html.js) .masked[data-revealed]:not([data-settled]) .word {
+    transition: transform var(--dur-rise) var(--ease-out);
+    transition-delay: var(--line-delay, 0ms);
+  }
+
+  /* The reason rises 8px and its case fades, both in 400ms: started when
+     the line is 80% up, they land on the shared baseline with it. */
+  :global(html.js) [data-reveal-root] .reason[data-reveal]:global(.is-revealing),
+  :global(html.js) [data-reveal-root] .cite[data-reveal]:global(.is-revealing) {
+    transition-duration: var(--part-dur), var(--part-dur);
+  }
+
+  /* Keyboard focus never lands in a waiting or moving row: it is whole at
+     once (the script also finishes every entrance on keyboard focus). */
+  :global(html.js) .item:focus-within .masked .word {
+    transform: none;
+    transition: none;
+  }
+
+  :global(html.js) [data-reveal-root] .item:focus-within [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ── Phones: the widest glued phrase ("the playbook earlier.", 8.48em at
+   LS 700) always fits the measure, so no glue is ever released: 42px at
+   390, 40px at 375, 38.6px at 360. ─────────────────────────────────────── */
+@media (max-width: 599px) {
+  .line {
+    font-size: min(var(--step-2), calc((100vw - 2 * var(--margin)) / 8.5));
+  }
+}
+
+/* ── 600–1023: eight columns ──────────────────────────────────────────── */
+@media (min-width: 600px) {
+  /* 128px before the wall, 1.6× the item gap. */
+  .root {
+    --wall-gap: var(--space-4xl);
+  }
+
+  .statement {
+    grid-column: 1 / span 7;
+  }
+
+  .reason,
+  .cite {
+    grid-column: 3 / -1;
+  }
+}
+
+/* ── 1024–1099: twelve columns, the reason still under its line ───────── */
+@media (min-width: 1024px) {
+  /* Lines of 75–78px: 96px between items, 128px before the wall. */
+  .root {
+    --item-gap: var(--space-3xl);
+  }
+
+  .title {
+    grid-column: 1 / span 9;
+  }
+
+  .line {
+    grid-column: 1 / span 8;
+  }
+
+  .reason,
+  .cite {
+    grid-column: 4 / span 8;
+  }
+}
+
+/* At 1024–1099 the statement step is still 28px on a 560px span: the French
+   statement would take three lines, so it shares the H2's nine columns
+   (two lines, EN and FR). */
+@media (min-width: 1024px) and (max-width: 1099px) {
+  .statement {
+    grid-column: 1 / span 9;
+  }
+}
+
+/* ── 1100 and up: the reason beside its line, on its last baseline ────── */
+@media (min-width: 1100px) {
+  /* Beside: the system's 64px list gap. */
+  .root {
+    --item-gap: var(--list-gap);
+  }
+
+  .item {
+    align-items: last baseline;
+  }
+
+  /* One gutter short of column 8's edge: any glyph ends at least two
+     gutters before the reason, and "the playbook earlier." still fits at
+     1100 (666 of 671px). A glued phrase cannot wrap, so it never makes a
+     third line; at worst it would reach a pixel into that air. */
+  .line {
+    max-width: calc(100% - var(--gutter));
+  }
+
+  .aside {
+    display: block;
+    grid-row: 1;
+    grid-column: 9 / span 4;
+  }
+
+  .reason {
+    margin-top: 0;
+  }
+
+  /* The case floats under the reason: a float is out of flow, so the
+     aside's last baseline stays the reason's. Its negative margin cancels
+     its own height: it hangs into the gap after the item, which stays
+     64px. */
+  .cite {
+    float: left;
+    clear: left;
+    margin-top: var(--space-2xs);
+    margin-bottom: calc(-1 * (var(--space-2xs) + var(--step--1) * var(--leading-small)));
+  }
+}

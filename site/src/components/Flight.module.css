@@ -1,0 +1,43 @@
+/* The flight layer (01-system.md §6.2, §4.5): two dots and the run, inside
+   the hero (which isolates) at --z-flight, above the type: the ë's own dots
+   seen crossing the e. Hidden at rest, so nothing ever rests on the
+   headline; the routes keep the dots clear of the role line, the bust and
+   the facts. Document space: the page's own scroll carries them. */
+.layer {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-flight);
+  pointer-events: none;
+  visibility: hidden;
+}
+
+/* One disc per dot. Flight.tsx sets --c from 0 to 1 over 200ms as the dot
+   lifts out of the ë: ink mixes into the field's before or after colour,
+   one element's own colour (never two stacked discs: their antialiased
+   edges would leave a dark ring). */
+.dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  transform-origin: 50% 50%;
+  background-color: color-mix(in oklab, var(--field-ink), var(--to) calc(var(--c, 0) * 100%));
+}
+
+.before {
+  --to: var(--field-before);
+}
+
+.after {
+  --to: var(--field-after);
+}
+
+.bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  background-color: var(--field-after);
+  /* the pair's run of dots (Pair.module.css); --d is set by Flight.tsx */
+  mask: var(--dot-run) 0 0 / calc(var(--d, 28px) * 0.5) 100% space no-repeat;
+}

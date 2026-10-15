@@ -1,0 +1,312 @@
+/*
+ * `method` (paper field), 02-home.md §6: the month drawn as the loop.
+ *
+ * < 768: the ring on the measure (margin to margin on phones) with the H2
+ *   inside it, the key (phones) or the labels, the caption; then the
+ *   statement; then the loop, each step's name at the statement step over
+ *   its line in body text.
+ * 768–1023: the title split 4 + 4 (the ring on columns 1–4, flush left; the
+ *   statement on 5–8, its last baseline on the H2's last baseline); then
+ *   the loop across the measure, the names hanging in columns 1–2.
+ * ≥ 1024: the same split on 6 + 6, and the ring holds (sticky) while the
+ *   loop scrolls past it on columns 7–12; the hold ends when the last
+ *   step's last baseline reaches the H2's last baseline, and both leave
+ *   together. Below 700px of height the ring scrolls with the page.
+ *   The Test step's pair marks both ends of its scale (0 and ×2, RowPair).
+ *
+ * Ring geometry: Method.tsx sets the ink extent (in R) inline; .layout
+ * derives --R (radius), --f (the H2's size), --lock (its measure), --cy
+ * (the centre's distance from the drawing's top) and --stage-h.
+ * Font metrics used for baselines (unitsPerEm-relative, measured):
+ *   League Spartan  ascent 0.70, descent 0.22
+ *   Figtree         ascent 0.95, descent 0.25
+ * A line box's last baseline sits (leading + descent − ascent) / 2 em
+ * above its bottom: H2 (0.95) 0.235em · statement (1.18) 0.35em · body
+ * (1.55) 0.425em.
+ */
+.root {
+  container-type: inline-size;
+  --ink-top: var(--ink-top-s);
+  --ink-bottom: var(--ink-bottom-s);
+  --label-size: var(--step--1);
+  --label-band: 0px;
+  padding-block: var(--section-gap);
+  padding-inline: var(--margin);
+}
+
+/* Nothing after the chapter (its lab page): keep room under the last row
+   for the entrance line (12% of the screen, plus the row's 24px rise). */
+.root:last-child {
+  padding-bottom: max(var(--section-gap), calc(12svh + var(--space-2xl)));
+}
+
+.layout {
+  /* Resolved against the chapter's width (the container above). */
+  --R: calc(100cqi / 2.002);
+  /* The heading inside the ring: the display step, unless the ring is too
+     small to keep about 52px clear of the dots beside it ("Ma boucle", the
+     widest line, measures 4.18em). */
+  --f: min(var(--step-2), calc((var(--R) * 0.931 - 52px) / 2.1));
+  /* The heading's measure: its widest line plus a little air ("How I run"
+     3.91em, "Ma boucle" 4.18em), so it always sets in two lines. */
+  --lock: calc(var(--f) * 4.1);
+  --cy: calc(var(--label-band) + var(--R) * var(--ink-top));
+  --stage-h: calc(var(--R) * (var(--ink-top) + var(--ink-bottom)) + 2 * var(--label-band));
+}
+
+.layout:lang(fr) {
+  --lock: calc(var(--f) * 4.35);
+}
+
+/* The ring's box, flush left on the measure: its first dot on the margin. */
+.stage {
+  position: relative;
+  width: calc(var(--R) * 2.002);
+  max-width: 100%;
+}
+
+/* The H2 at the ring's centre, its lines flush left on a block centred in
+   the ring. */
+.stage .title {
+  position: absolute;
+  z-index: 1;
+  top: var(--cy);
+  left: 50%;
+  width: var(--lock);
+  margin: 0;
+  translate: -50% -50%;
+  font-size: var(--f);
+}
+
+.head {
+  margin-top: var(--space-xl);
+}
+
+.statement {
+  margin: 0;
+}
+
+/* ── The loop ────────────────────────────────────────────────────────── */
+.loop {
+  display: grid;
+  row-gap: var(--list-gap);
+  margin: var(--space-xl) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The step's name (LS 700, statement step) over its line (Figtree, body,
+   full ink). */
+.step {
+  display: block;
+}
+
+.line {
+  display: block;
+  margin-top: var(--space-2xs);
+  text-wrap: pretty;
+}
+
+/* The Test step's pair, drawn to scale on the column's measure; its caption
+   (the measure and the scale) starts on the column's edge, under the 0.
+   RowPair.module.css sets its band, its two ends and, on a short measure,
+   its legend. A Small caption ends this row, so it keeps 12px more air
+   below than a line does (76px at 1440 against 64px): it stays with its
+   pair and never reads as a label of the step under it. */
+.pair {
+  margin-top: var(--space-m);
+  margin-bottom: var(--space-xs);
+}
+
+/* The step name leads its line (02 §6.4: rows rise one by one, 70ms; the
+   name arrives a beat before the words it names). Hidden only under
+   html.js and no-preference; a focused link inside shows at once. */
+@media (prefers-reduced-motion: no-preference) {
+  :global(html.js) .loop > :not([class~="is-in"]) .line {
+    opacity: 0;
+  }
+
+  :global(html.js) .loop > [class~="is-revealing"] .line {
+    transition: opacity var(--dur-fade) var(--ease-out);
+    transition-delay: calc(var(--reveal-delay, 0ms) + 2 * var(--stagger-ui));
+  }
+
+  :global(html.js) .loop > :not([class~="is-in"]):focus-within .line {
+    opacity: 1;
+    transition: none;
+  }
+}
+
+/* ── From 600: labels on the dots and the caption inside the ring. ───── */
+@media (min-width: 600px) {
+  .root {
+    --ink-top: var(--ink-top-l);
+    --ink-bottom: var(--ink-bottom-l);
+    --label-band: calc(2 * var(--label-size) * var(--leading-small) + var(--space-xs));
+  }
+
+  .layout {
+    --R: min(calc(var(--step-2) * 3.7), calc(100cqi / 2.002));
+  }
+
+  .head {
+    margin-top: var(--space-2xl);
+  }
+
+  .loop {
+    margin-top: var(--space-2xl);
+  }
+}
+
+/* A screen at least 700px tall never shows a ring taller than itself. */
+@media (min-width: 600px) and (max-width: 767px) and (min-height: 700px) {
+  .layout {
+    --R: min(
+      calc(var(--step-2) * 3.7),
+      calc(100cqi / 2.002),
+      calc((100svh - var(--bar) - var(--space-xl) - 2 * var(--label-band)) / (var(--ink-top) + var(--ink-bottom)))
+    );
+  }
+}
+
+/* ── From 768: the split title. The statement's box ends where its last
+   baseline meets the H2's: the H2's last baseline sits 0.715f under the
+   ring's centre (half its two 0.95 lines, less 0.235f), and the
+   statement's box runs 0.35em past its own last baseline. ───────────── */
+@media (min-width: 768px) {
+  .layout {
+    --half: calc((100cqi - var(--gutter)) / 2);
+    --R: min(calc(var(--step-2) * 3.7), calc(var(--half) / 2.002));
+    display: grid;
+    grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+    column-gap: var(--gutter);
+    align-items: start;
+  }
+
+  .stage {
+    grid-row: 1;
+    grid-column: 1 / span 4;
+  }
+
+  .head {
+    grid-row: 1;
+    grid-column: 5 / span 4;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: calc(var(--cy) + 0.715 * var(--f) + 0.35 * var(--step-1));
+    margin-top: 0;
+  }
+
+  .loop {
+    grid-row: 2;
+    grid-column: 1 / -1;
+    margin-top: var(--space-3xl);
+  }
+}
+
+/* 768–1023: the names hang in columns 1–2, their lines on 3–8, on one
+   first baseline. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .item {
+    display: grid;
+    grid-template-columns: calc((100cqi - 7 * var(--gutter)) / 4 + var(--gutter)) minmax(0, 1fr);
+    column-gap: var(--gutter);
+    align-items: baseline;
+  }
+
+  .line {
+    grid-column: 2;
+    margin-top: 0;
+  }
+
+  .pair {
+    grid-column: 2;
+  }
+}
+
+/* ── From 1024: the loop scrolls past the ring, on even halves: the ring on
+   columns 1–6, the statement and the loop on 7–12 (01 §4.2: 1024 is a
+   12-column desktop width). ───────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .root {
+    --stage-cols: 6;
+  }
+
+  .layout {
+    --half: calc((100cqi + var(--gutter)) * var(--stage-cols) / 12 - var(--gutter));
+  }
+
+  .stage {
+    grid-row: 1 / span 2;
+    grid-column: 1 / span 6;
+  }
+
+  .head,
+  .loop {
+    grid-column: 7 / -1;
+  }
+}
+
+/* Labels on the dots at the body size once the ring is large enough to
+   carry them inside its own half. */
+@media (min-width: 1280px) {
+  .root {
+    --label-size: var(--step-0);
+  }
+}
+
+/* The hold (≥ 1024 and ≥ 700px tall). The ring is sized from the screen's
+   height, so it is whole under the bar, and pinned centred there. The
+   loop's bottom padding ends the hold when the last step's last baseline
+   (0.425em over its box's bottom) is on the H2's last baseline: both then
+   leave together. The anchor (the bar's Method link) lands with the ring
+   already pinned. */
+@media (min-width: 1024px) and (min-height: 700px) {
+  /* (1,3,0): outranks globals.css's chapter landing rule (1,2,2), which
+     puts a chapter's top edge under the bar and would leave the ring's
+     foot under the fold. */
+  .root[id][data-field]:not(:global(#top)) {
+    --R-view: min(
+      calc(var(--step-2) * 3.7),
+      calc(((100vw - 2 * var(--margin) + var(--gutter)) * var(--stage-cols) / 12 - var(--gutter)) / 2.002),
+      calc((100svh - var(--bar) - var(--space-xl) - 2 * var(--label-band)) / (var(--ink-top) + var(--ink-bottom)))
+    );
+    /* where the pinned ring's top sits under the bar (as .stage's top) */
+    --stick-view: calc(
+      var(--bar) +
+        max(
+          var(--space-s),
+          (100svh - var(--bar) - var(--R-view) * (var(--ink-top) + var(--ink-bottom)) - 2 * var(--label-band)) / 2
+        )
+    );
+    /* never less than the pin's own offset, so a chapter at the top of its
+       page starts with the ring and the statement on their shared baseline */
+    padding-top: max(var(--section-gap), var(--stick-view));
+    scroll-margin-top: calc(
+      var(--stick-view) - var(--bar) - var(--space-s) - max(var(--section-gap), var(--stick-view))
+    );
+  }
+
+  .layout {
+    --R: min(
+      calc(var(--step-2) * 3.7),
+      calc(var(--half) / 2.002),
+      calc((100svh - var(--bar) - var(--space-xl) - 2 * var(--label-band)) / (var(--ink-top) + var(--ink-bottom)))
+    );
+  }
+
+  .stage {
+    position: sticky;
+    top: max(
+      calc(var(--bar) + var(--space-s)),
+      calc(var(--bar) + (100svh - var(--bar) - var(--stage-h)) / 2)
+    );
+  }
+
+  .loop {
+    padding-bottom: calc(
+      var(--R) * var(--ink-bottom) + var(--label-band) - 0.715 * var(--f) - 0.425 * var(--step-0)
+    );
+  }
+}

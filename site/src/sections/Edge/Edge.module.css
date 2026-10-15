@@ -1,0 +1,151 @@
+/*
+ * Chapter 2, `edge` (02-home.md §2): stone field, two movements 128px apart
+ * (96px on phones). Token values only.
+ *
+ * Movement 1, the clients. The H2 and the client index share the display
+ * step and are told apart by place: the H2 sits alone at the top left over
+ * its statement; the index runs the full measure after a 96px break, each
+ * group closed by its Small context line. Below 1024px the index steps
+ * down: three quarters of the display step on tablets (46px at 768, a
+ * critic's amendment to 02 §2.1: the tablet keeps the poster), 26px on
+ * phones, where group 1 holds two lines (measured 360–599px, EN and FR).
+ */
+.root {
+  display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  column-gap: var(--gutter);
+  padding-block: var(--section-gap);
+  padding-inline: var(--margin);
+}
+
+.title {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.statement {
+  grid-column: 1 / -1;
+  margin: var(--space-m) 0 0;
+}
+
+/* ── The client index: plain text, never logos or links. ── */
+.index {
+  grid-column: 1 / -1;
+  display: grid;
+  row-gap: var(--space-xl);
+  margin-top: var(--space-xl);
+}
+
+.group {
+  display: grid;
+  row-gap: var(--space-2xs);
+}
+
+/* Below 1024px the index keeps the poster: three quarters of the display
+   step (46px at 768), so "I also speak client: Galeries Lafayette…" still
+   reads as one poster on a tablet; phones set it at 26px (below). */
+.names {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: calc(var(--step-2) * 0.75);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-display);
+  font-kerning: normal;
+  text-wrap: balance;
+  hyphens: none;
+}
+
+/* Phones: 26px, LS 700. No group ever takes more than two lines (02
+   §2.1): three quarters of the display step (31.5px at 390) set group 1
+   on three. 26px sets 2 + 2 lines at 360–390 and 2 + 1 from 430. */
+@media (max-width: 599px) {
+  .names {
+    font-size: 1.625rem;
+  }
+}
+
+/* A name never breaks inside ("Galeries / Lafayette"); its comma stays on
+   it. Inline-block, so each name can rise on its own in the roll call. */
+.name {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* The roll call starts two chapter staggers in: after the H2 (0) and the
+   statement (70ms) when they arrive together, as on a direct load. */
+@media (prefers-reduced-motion: no-preference) {
+  :global(html.js) .index[data-reveal-root] [data-reveal]:global(.is-revealing) {
+    transition-delay: calc(var(--reveal-delay, 0ms) + 2 * var(--stagger));
+  }
+}
+
+.context {
+  margin: 0;
+  max-width: var(--measure);
+  color: var(--field-muted);
+  text-wrap: pretty;
+}
+
+
+/* ── Movement 2: the invitation names the live thing. ── */
+.storiesBlock {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  margin-top: var(--space-3xl);
+}
+
+.invite {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+/* 1024 and up: the index at the display step, the full desktop rhythm. */
+@media (min-width: 1024px) {
+  .title {
+    grid-column: 1 / span 9;
+  }
+
+  .statement {
+    grid-column: 1 / span 10;
+  }
+
+  .index {
+    margin-top: var(--space-3xl);
+  }
+
+  /* One line of Small under its group (02 §2.4: measured at 1024). */
+  .context {
+    max-width: none;
+  }
+
+  .names {
+    font-size: var(--step-2);
+  }
+
+  .storiesBlock {
+    margin-top: var(--space-4xl);
+  }
+
+  .invite {
+    grid-column: 1 / span 8;
+  }
+}
+
+@media (min-width: 1280px) {
+  .title {
+    grid-column: 1 / span 7;
+  }
+
+  /* 8 columns: FR keeps its three lines (four on 7 columns, measured). */
+  .statement {
+    grid-column: 1 / span 8;
+  }
+
+  .invite {
+    grid-column: 1 / span 7;
+  }
+}

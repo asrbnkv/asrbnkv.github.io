@@ -1,0 +1,129 @@
+/*
+ * Next case (03-case-and-pages.md §5.2), on ink.
+ */
+.link {
+  display: block;
+  margin-top: var(--space-2xl);
+  text-decoration-line: none;
+  transform-origin: 0 50%;
+  transition:
+    transform var(--dur-press) var(--ease-out),
+    opacity var(--dur-press) var(--ease-out);
+}
+
+.link:active {
+  opacity: 1;
+  transform: scale(var(--press-scale-row));
+}
+
+.figure {
+  display: block;
+  transition: translate var(--dur-hover) var(--ease-out);
+}
+
+.lockup {
+  display: block;
+}
+
+/* S covers fit their figure to cols 1–6 of the measure. */
+.side {
+  width: calc((100% - 11 * var(--gutter)) / 12 * 6 + 5 * var(--gutter));
+}
+
+/* The 97% fits cols 1–7 at the giant step (787px at 1440). */
+.beside {
+  width: calc((100% - 11 * var(--gutter)) / 12 * 7 + 6 * var(--gutter));
+}
+
+@media (max-width: 1023px) {
+  .side,
+  .beside {
+    width: 100%;
+  }
+}
+
+.figureFrame {
+  text-box: trim-both cap alphabetic;
+}
+
+.descends .figureFrame {
+  text-box-edge: cap text;
+}
+
+/* The S mark before the H1, centred on the title's x-height. */
+.head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-s);
+  margin-top: var(--space-xl);
+}
+
+.mark {
+  translate: 0 calc(var(--pair-d-s) / 2 - 0.5ex);
+}
+
+.title {
+  max-width: 24ch;
+  text-decoration-line: underline;
+  text-decoration-thickness: var(--underline-thickness);
+  text-underline-offset: var(--underline-offset);
+  text-decoration-color: color-mix(in srgb, currentColor var(--underline-rest), transparent);
+  transition: text-decoration-color var(--dur-hover) var(--ease-hover);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .link:hover .title {
+    text-decoration-color: currentColor;
+  }
+
+  /* The figure is most of the link: it leans towards the next page. */
+  .link:hover .figure {
+    translate: 8px 0;
+  }
+}
+
+.link:focus-visible .title {
+  text-decoration-color: currentColor;
+}
+
+.meta {
+  display: block;
+  margin-top: var(--space-s);
+  padding-left: calc(4 * var(--pair-d-s) + var(--space-s));
+}
+
+.all {
+  margin-top: var(--space-xl);
+}
+
+/* After an S figure, the mark, H1 and meta stand on cols 8–12 on the
+   figure's baseline: the S cover's own lockup (03 §2.2). */
+@media (min-width: 1100px) {
+  .lockupSide {
+    display: grid;
+    grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+    column-gap: var(--gutter);
+    align-items: end;
+  }
+
+  .lockupSide .figure {
+    grid-column: 1 / 7;
+    width: auto;
+  }
+
+  .lockupBeside .figure {
+    grid-column: 1 / 8;
+  }
+
+  .lockupSide .lockup {
+    grid-column: 8 / 13;
+  }
+
+  .lockupSide .head {
+    margin-top: 0;
+  }
+
+  .lockupSide .meta {
+    text-box: trim-both cap alphabetic;
+  }
+}
